@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="8" fill="#EFF6FF"/>
+  <!-- Gorra de policía oficial -->
+  <ellipse cx="32" cy="30" rx="18" ry="8" fill="#1E3A8A"/>
+  <rect x="20" y="24" width="24" height="10" fill="#1E40AF" rx="2"/>
+  <polygon points="12,30 52,30 46,36 18,36" fill="#0F172A"/>
+  <!-- Placa dorada policía -->
+  <polygon points="32,20 37,25 35,31 29,31 27,25" fill="#F59E0B"/>
+  <!-- Silbato / sirena destello -->
+  <circle cx="32" cy="10" r="4" fill="#EF4444"/>
+  <line x1="22" y1="10" x2="16" y2="8" stroke="#EF4444" stroke-width="2"/>
+  <line x1="42" y1="10" x2="48" y2="8" stroke="#EF4444" stroke-width="2"/>
+  <!-- Esposas policiales -->
+  <circle cx="24" cy="48" r="6" fill="none" stroke="#64748B" stroke-width="3"/>
+  <circle cx="40" cy="48" r="6" fill="none" stroke="#64748B" stroke-width="3"/>
+  <line x1="30" y1="48" x2="34" y2="48" stroke="#64748B" stroke-width="3"/>
+</svg>

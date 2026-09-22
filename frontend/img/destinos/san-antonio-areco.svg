@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="8" fill="#FEF3C7"/>
+  <!-- Pampa verde -->
+  <rect x="0" y="44" width="64" height="20" fill="#15803D"/>
+  <circle cx="50" cy="18" r="8" fill="#F59E0B"/>
+  <!-- Estancia / pulpería colonial -->
+  <rect x="6" y="28" width="26" height="18" fill="#FEF9C3" rx="1"/>
+  <polygon points="4,28 19,18 34,28" fill="#991B1B"/>
+  <rect x="14" y="34" width="8" height="12" fill="#78350F"/>
+  <!-- Silueta caballo criollo -->
+  <path d="M38,44 Q42,34 46,32 Q50,30 54,34 Q56,38 52,44 Q56,44 58,48 L56,52 L50,52 L50,48 L44,48 L44,52 L40,52 Z" fill="#78350F"/>
+  <!-- Sombrero gaucho -->
+  <ellipse cx="44" cy="28" rx="6" ry="2" fill="#1C1917"/>
+</svg>

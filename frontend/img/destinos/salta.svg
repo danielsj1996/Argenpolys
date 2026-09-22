@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="8" fill="#FFF1F2"/>
+  <rect x="0" y="52" width="64" height="12" fill="#1E293B"/>
+  <!-- Catedral de Salta La Linda (Rosada y dorada) -->
+  <rect x="8" y="22" width="48" height="32" fill="#FB7185" rx="2"/>
+  <!-- Campanarios barrocos -->
+  <rect x="8" y="12" width="12" height="20" fill="#F43F5E"/>
+  <polygon points="6,12 14,2 22,12" fill="#BE123C"/>
+  <rect x="44" y="12" width="12" height="20" fill="#F43F5E"/>
+  <polygon points="42,12 50,2 58,12" fill="#BE123C"/>
+  <!-- Frontis barroco y detalles crema -->
+  <polygon points="18,22 32,12 46,22" fill="#FEF08A"/>
+  <path d="M26,52 L26,36 Q32,30 38,36 L38,52 Z" fill="#881337"/>
+  <circle cx="32" cy="24" r="3" fill="#FEF08A"/>
+</svg>

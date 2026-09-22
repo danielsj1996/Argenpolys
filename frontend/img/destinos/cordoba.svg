@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="8" fill="#F0FDF4"/>
+  <rect x="0" y="52" width="64" height="12" fill="#334155"/>
+  <!-- Fachada Manzana Jesuítica / Catedral -->
+  <rect x="10" y="24" width="44" height="30" fill="#FDE68A" rx="2"/>
+  <!-- Torres gemelas coloniales -->
+  <rect x="10" y="14" width="10" height="20" fill="#F59E0B"/>
+  <polygon points="8,14 15,4 22,14" fill="#B45309"/>
+  <rect x="44" y="14" width="10" height="20" fill="#F59E0B"/>
+  <polygon points="42,14 49,4 56,14" fill="#B45309"/>
+  <!-- Cúpula central barroca -->
+  <ellipse cx="32" cy="24" rx="10" ry="8" fill="#D97706"/>
+  <!-- Arco de ingreso colonial -->
+  <path d="M26,52 L26,38 Q32,32 38,38 L38,52 Z" fill="#78350F"/>
+  <!-- Campanas -->
+  <circle cx="15" cy="22" r="2.5" fill="#78350F"/>
+  <circle cx="49" cy="22" r="2.5" fill="#78350F"/>
+</svg>

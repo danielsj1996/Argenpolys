@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="8" fill="#FDEDEC"/>
+  <!-- Fachada neoclásica del Teatro Colón -->
+  <rect x="6" y="24" width="52" height="34" fill="#FADBD8" rx="2"/>
+  <!-- Frontis / cornisa superior -->
+  <polygon points="4,24 32,10 60,24" fill="#922B21"/>
+  <!-- Columnas corintias clásicas -->
+  <rect x="10" y="24" width="4" height="32" fill="#B03A2E"/>
+  <rect x="22" y="24" width="4" height="32" fill="#B03A2E"/>
+  <rect x="38" y="24" width="4" height="32" fill="#B03A2E"/>
+  <rect x="50" y="24" width="4" height="32" fill="#B03A2E"/>
+  <!-- Puertas y alfombra roja -->
+  <rect x="28" y="38" width="8" height="18" fill="#78281F" rx="2"/>
+  <rect x="0" y="56" width="64" height="8" fill="#C0392B"/>
+  <!-- Lira musical de oro en tímpano -->
+  <circle cx="32" cy="18" r="3" fill="#F1C40F"/>
+</svg>

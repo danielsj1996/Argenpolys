@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="8" fill="#F0F9FF"/>
+  <!-- Cañería y grifo -->
+  <rect x="8" y="24" width="22" height="10" fill="#0284C7" rx="2"/>
+  <rect x="24" y="24" width="12" height="18" fill="#0369A1" rx="2"/>
+  <!-- Manivela superior -->
+  <rect x="27" y="16" width="6" height="8" fill="#64748B"/>
+  <rect x="20" y="12" width="20" height="5" fill="#DC2626" rx="2"/>
+  <!-- Pico del grifo -->
+  <path d="M24,36 L36,36 L34,44 L26,44 Z" fill="#0284C7"/>
+  <!-- Gota de agua cristalina -->
+  <path d="M30,48 C30,48 24,54 24,57 C24,60 27,62 30,62 C33,62 36,60 36,57 C36,54 30,48 30,48 Z" fill="#38BDF8"/>
+</svg>

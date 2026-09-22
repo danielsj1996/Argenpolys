@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="8" fill="#FEF9E7"/>
+  <circle cx="50" cy="16" r="8" fill="#F39C12"/>
+  <!-- Mar azul -->
+  <rect x="0" y="36" width="64" height="16" fill="#2980B9"/>
+  <!-- Arena playa Bristol -->
+  <rect x="0" y="50" width="64" height="14" fill="#FAD7A0"/>
+  <!-- Estatua de piedra del Lobo Marino de Fioravanti -->
+  <path d="M16,52 Q20,32 26,30 Q32,28 34,34 Q32,44 42,48 L42,54 L16,54 Z" fill="#784212"/>
+  <!-- Cabeza y hocico erguido mirando al mar -->
+  <circle cx="28" cy="30" r="5" fill="#641E16"/>
+  <ellipse cx="32" cy="28" rx="4" ry="2.5" fill="#641E16"/>
+  <!-- Pedestal de piedra -->
+  <rect x="12" y="52" width="34" height="4" fill="#7F8C8D" rx="1"/>
+</svg>

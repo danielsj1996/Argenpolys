@@ -1,0 +1,1889 @@
+/* =========================================================
+   RESET Y ESTILOS GENERALES
+   ========================================================= */
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background: #e2e8f0;
+    color: #1e293b;
+    line-height: 1.5;
+}
+
+.container {
+    width: 100%;
+    min-height: 100vh;
+    padding: 24px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.oculto {
+    display: none !important;
+}
+
+
+/* =========================================================
+   TARJETAS GENERALES (INICIO, CREAR, UNIRSE, SALA)
+   ========================================================= */
+
+.card {
+    width: 100%;
+    max-width: 520px;
+    margin: 40px auto;
+    background: #ffffff;
+    border-radius: 18px;
+    padding: 36px 32px;
+    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    animation: fadeInCard 0.25s ease-out;
+}
+
+@keyframes fadeInCard {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.card h1 {
+    margin: 0 0 8px;
+    font-size: 26px;
+    font-weight: 800;
+    color: #0f172a;
+    text-align: center;
+}
+
+.card .descripcion {
+    margin: 0 0 24px;
+    color: #64748b;
+    font-size: 14px;
+    text-align: center;
+}
+
+.campo {
+    margin-bottom: 18px;
+    text-align: left;
+}
+
+.campo label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #334155;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.campo input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 10px;
+    font-size: 15px;
+    color: #0f172a;
+    background: #f8fafc;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+}
+
+.campo input:focus {
+    border-color: #2563eb;
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+
+/* =========================================================
+   BOTONES
+   ========================================================= */
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 20px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+    user-select: none;
+}
+
+.btn:active:not(:disabled) {
+    transform: scale(0.98);
+}
+
+.btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    filter: grayscale(0.5);
+}
+
+.btn.principal {
+    background: linear-gradient(135deg, #1d4ed8, #2563eb);
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+}
+
+.btn.principal:hover:not(:disabled) {
+    background: linear-gradient(135deg, #1e40af, #1d4ed8);
+    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+}
+
+.btn.secundario {
+    background: #f1f5f9;
+    color: #334155;
+    border: 1.5px solid #cbd5e1;
+}
+
+.btn.secundario:hover:not(:disabled) {
+    background: #e2e8f0;
+    border-color: #94a3b8;
+    color: #0f172a;
+}
+
+.btn.volver {
+    width: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #475569;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    border-radius: 20px;
+    margin-bottom: 16px;
+}
+
+.btn.volver:hover {
+    background: #e2e8f0;
+    color: #0f172a;
+}
+
+.menu-inicio {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 10px;
+}
+
+.menu-inicio .btn {
+    width: 100%;
+    padding: 14px 20px;
+    font-size: 16px;
+    border-radius: 12px;
+}
+
+.mensaje {
+    margin-top: 14px;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+    color: #e11d48;
+    min-height: 18px;
+}
+
+
+/* =========================================================
+   PANTALLA DE SALA DE ESPERA
+   ========================================================= */
+
+.sala-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.sala-header h1 {
+    margin: 4px 0 0;
+    font-size: 28px;
+    letter-spacing: 2px;
+    color: #1e40af;
+    text-align: left;
+}
+
+.texto-pequeno {
+    margin: 0;
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.estado {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 20px;
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fde68a;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.codigo-info {
+    margin-bottom: 22px;
+    padding: 18px;
+    background: linear-gradient(135deg, #f0f7ff, #e0f2fe);
+    border: 2px dashed #93c5fd;
+    border-radius: 14px;
+    text-align: center;
+}
+
+.codigo-info p {
+    margin: 0 0 6px;
+    color: #3b82f6;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.codigo-info strong {
+    display: block;
+    font-size: 32px;
+    letter-spacing: 4px;
+    color: #1e3a8a;
+    margin-bottom: 10px;
+    font-weight: 900;
+}
+
+.btn.btn-copiar {
+    width: auto;
+    padding: 7px 16px;
+    font-size: 13px;
+    background: #ffffff;
+    color: #1d4ed8;
+    border: 1.5px solid #93c5fd;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.btn.btn-copiar:hover {
+    background: #dbeafe;
+    border-color: #3b82f6;
+}
+
+.jugadores {
+    margin-top: 15px;
+}
+
+.jugadores-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.jugadores-header h2 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 800;
+    color: #1e293b;
+}
+
+#contadorJugadores {
+    padding: 4px 10px;
+    border-radius: 12px;
+    background: #e2e8f0;
+    color: #334155;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+#listaJugadores {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+#listaJugadores li {
+    display: flex;
+    align-items: center;
+    padding: 10px 14px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #1e293b;
+}
+
+.badge-tu {
+    color: #2563eb;
+    font-size: 12px;
+    font-weight: 700;
+    margin-left: 6px;
+}
+
+.badge-host {
+    background: #fef3c7;
+    color: #b45309;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 10px;
+    margin-left: auto;
+}
+
+.zona-anfitrion {
+    margin-top: 20px;
+    padding-top: 18px;
+    border-top: 1px solid #e2e8f0;
+    text-align: center;
+}
+
+.zona-anfitrion .iniciar {
+    width: 100%;
+    padding: 14px 20px;
+    font-size: 16px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #16a34a, #15803d);
+    color: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 14px rgba(22, 163, 74, 0.3);
+}
+
+.zona-anfitrion .iniciar:hover {
+    background: linear-gradient(135deg, #15803d, #166534);
+}
+
+.zona-anfitrion p {
+    margin: 8px 0 0;
+    color: #64748b;
+    font-size: 12px;
+}
+
+.esperando {
+    margin-top: 20px;
+    padding: 12px;
+    border-radius: 10px;
+    background: #eff6ff;
+    color: #1e40af;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+
+/* =========================================================
+   PANTALLA DE PARTIDA
+   ========================================================= */
+
+.pantalla-partida {
+    width: 100%;
+    max-width: 1050px;
+    margin: 0 auto;
+}
+
+.juego-header {
+    width: 100%;
+    margin: 0 auto 14px auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 6px;
+}
+
+.juego-header h1 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 900;
+    color: #0f172a;
+}
+
+.juego-header p {
+    margin: 2px 0 0;
+    color: #64748b;
+    font-size: 13px;
+}
+
+.estado-partida {
+    padding: 6px 14px;
+    border-radius: 20px;
+    background: #dbeafe;
+    color: #1e40af;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+
+/* =========================================================
+   TABLERO Y GRILLA
+   ========================================================= */
+
+.tablero {
+    width: min(92vw, 920px);
+    height: min(92vw, 920px);
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(11, 1fr);
+    grid-template-rows: repeat(11, 1fr);
+    position: relative;
+    background: #cbd5e1;
+    border: 4px solid #1e293b;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.22);
+}
+
+
+/* =========================================================
+   CENTRO DEL TABLERO (ESTRUCTURA VERTICAL ORGANIZADA)
+   ========================================================= */
+
+.centro-tablero {
+    grid-column: 2 / 11;
+    grid-row: 2 / 11;
+    position: relative;
+    background: #f8fafc;
+    border: 2px solid #1e293b;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    overflow: hidden;
+    z-index: 1;
+}
+
+
+/* =========================================================
+   FILA SUPERIOR: TARJETAS DE INFORMACIÓN
+   ========================================================= */
+
+.fila-superior-tablero {
+    display: flex;
+    justify-content: space-between;
+    align-items: stretch;
+    gap: 8px;
+    width: 100%;
+    max-height: 125px;
+    z-index: 5;
+}
+
+/* 1. Panel Jugador Actual */
+.panel-jugador {
+    flex: 1;
+    min-width: 130px;
+    max-width: 185px;
+    background: #ffffff;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 10px;
+    padding: 8px 12px;
+    text-align: left;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.panel-jugador h3 {
+    margin: 0 0 2px;
+    font-size: 14px;
+    font-weight: 800;
+    color: #1e3a8a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.panel-jugador p {
+    margin: 0 0 4px;
+    font-size: 11px;
+    color: #64748b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.panel-jugador .dinero-valor {
+    font-size: 14px;
+    font-weight: 800;
+    color: #15803d;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    padding: 2px 8px;
+    border-radius: 14px;
+    display: inline-block;
+    align-self: flex-start;
+}
+
+/* 2. Panel Lista de Jugadores */
+.panel-jugadores-partida {
+    flex: 1.35;
+    min-width: 170px;
+    max-width: 290px;
+    background: #ffffff;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 10px;
+    padding: 6px 10px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    overflow-y: auto;
+}
+
+.panel-jugadores-partida h3 {
+    margin: 0 0 4px;
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #475569;
+    text-align: center;
+}
+
+.lista-jugadores-partida {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.jugador-fila {
+    display: flex;
+    flex-direction: column;
+    padding: 3px 6px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 11px;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.jugador-fila.turno-activo {
+    background: #ecfdf5;
+    border-color: #34d399;
+    box-shadow: 0 0 0 1.5px rgba(16, 185, 129, 0.25);
+}
+
+.jugador-fila.bancarrota {
+    opacity: 0.45;
+    text-decoration: line-through;
+    background: #f1f5f9;
+}
+
+.jugador-fila-cabecera {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.ficha-indicador {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    color: white;
+    font-size: 8.5px;
+    font-weight: 800;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.jugador-fila-nombre {
+    font-weight: 700;
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: left;
+}
+
+.badge-turno {
+    background: #10b981;
+    color: white;
+    font-size: 8px;
+    font-weight: 800;
+    padding: 1px 5px;
+    border-radius: 6px;
+}
+
+.badge-carcel {
+    background: #ef4444;
+    color: white;
+    font-size: 8px;
+    font-weight: 800;
+    padding: 1px 5px;
+    border-radius: 6px;
+}
+
+.badge-bancarrota {
+    background: #64748b;
+    color: white;
+    font-size: 8px;
+    padding: 1px 5px;
+    border-radius: 6px;
+}
+
+.jugador-fila-detalles {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 1px;
+    font-size: 9.5px;
+    color: #64748b;
+}
+
+.jugador-fila-dinero {
+    font-weight: 800;
+    color: #15803d;
+}
+
+/* 3. Panel Mis Propiedades */
+.panel-propiedades {
+    flex: 1;
+    min-width: 130px;
+    max-width: 190px;
+    background: #ffffff;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 10px;
+    padding: 6px 10px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    overflow-y: auto;
+}
+
+.panel-propiedades h3 {
+    margin: 0 0 4px;
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #475569;
+    text-align: center;
+}
+
+#listaPropiedades {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.sin-propiedades {
+    font-size: 11px;
+    color: #94a3b8;
+    margin: 6px 0;
+    text-align: center;
+}
+
+.propiedad-card {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 6px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    text-align: left;
+    font-size: 10px;
+}
+
+.propiedad-color {
+    width: 8px;
+    height: 24px;
+    border-radius: 3px;
+    flex-shrink: 0;
+    background: #94a3b8; /* fallback */
+}
+
+/* Monopoly color swatches para el panel de propiedades */
+.propiedad-color.grupo-marron     { background: #955436; }
+.propiedad-color.grupo-celeste    { background: #aae0fa; border: 1px solid #72c5ef; }
+.propiedad-color.grupo-rosa       { background: #d93a96; }
+.propiedad-color.grupo-naranja    { background: #f7941d; }
+.propiedad-color.grupo-rojo       { background: #ed1b24; }
+.propiedad-color.grupo-amarillo   { background: #fef200; border: 1px solid #c9bf00; }
+.propiedad-color.grupo-verde      { background: #1fb25a; }
+.propiedad-color.grupo-azul-oscuro{ background: #0072bb; }
+/* Especiales */
+.propiedad-color.cat-ferrocarril  { background: #1a1a1a; }
+.propiedad-color.cat-servicio     { background: #f1c40f; }
+
+.propiedad-info {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.propiedad-info strong {
+    font-size: 10.5px;
+    color: #1e293b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.propiedad-info span {
+    font-size: 9px;
+    color: #64748b;
+}
+
+
+/* =========================================================
+   ZONA CENTRAL: ACCIONES, CASILLA E HISTORIAL
+   ========================================================= */
+
+.zona-acciones {
+    flex: 1;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 0;
+    z-index: 4;
+}
+
+.info-casilla {
+    width: 92%;
+    max-width: 360px;
+    background: #ffffff;
+    border: 2px solid #1e293b;
+    border-radius: 12px;
+    padding: 8px 16px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.info-casilla h3 {
+    margin: 0 0 2px;
+    font-size: 15px;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.info-casilla p {
+    margin: 0;
+    font-size: 12px;
+    color: #64748b;
+}
+
+#precioCasillaActual {
+    font-weight: 800;
+    font-size: 13.5px;
+    color: #15803d;
+    margin-top: 3px;
+}
+
+.botones-accion {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    width: 92%;
+    max-width: 360px;
+}
+
+.btn.comprar-propiedad {
+    background: linear-gradient(135deg, #16a34a, #15803d);
+    color: white;
+    padding: 8px 18px;
+    font-size: 13px;
+    font-weight: 800;
+    border-radius: 8px;
+    width: auto;
+    min-width: 150px;
+    box-shadow: 0 2px 8px rgba(22, 163, 74, 0.25);
+}
+
+.btn.comprar-propiedad:hover:not(:disabled) {
+    background: linear-gradient(135deg, #15803d, #166534);
+}
+
+.btn.pasar-turno {
+    background: linear-gradient(135deg, #f97316, #ea580c);
+    color: white;
+    padding: 8px 18px;
+    font-size: 13px;
+    font-weight: 800;
+    border-radius: 8px;
+    width: auto;
+    min-width: 150px;
+    box-shadow: 0 2px 8px rgba(234, 88, 12, 0.25);
+}
+
+.btn.pasar-turno:hover:not(:disabled) {
+    background: linear-gradient(135deg, #ea580c, #c2410c);
+}
+
+.btn.pagar-fianza {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+    padding: 8px 18px;
+    font-size: 13px;
+    font-weight: 800;
+    border-radius: 8px;
+    width: auto;
+    min-width: 150px;
+    box-shadow: 0 2px 8px rgba(220, 38, 38, 0.25);
+}
+
+.btn.pagar-fianza:hover:not(:disabled) {
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+}
+
+.panel-historial {
+    width: 92%;
+    max-width: 360px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 4px 8px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+    text-align: left;
+}
+
+.panel-historial h4 {
+    margin: 0 0 3px;
+    font-size: 10.5px;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: #64748b;
+    border-bottom: 1px solid #f1f5f9;
+    padding-bottom: 2px;
+}
+
+.historial-eventos {
+    max-height: 52px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.historial-item {
+    font-size: 10px;
+    line-height: 1.25;
+    color: #334155;
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+}
+
+.historial-icono {
+    font-size: 10px;
+    flex-shrink: 0;
+}
+
+.historial-texto {
+    flex: 1;
+}
+
+.historial-hora {
+    font-size: 8px;
+    color: #94a3b8;
+    flex-shrink: 0;
+}
+
+
+/* =========================================================
+   FILA INFERIOR: MENSAJE DE TURNO Y DADOS
+   ========================================================= */
+
+.fila-inferior-tablero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    width: 100%;
+    z-index: 5;
+}
+
+.mensaje-turno {
+    margin: 0;
+    padding: 4px 12px;
+    background: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fde68a;
+    border-radius: 8px;
+    font-size: 11.5px;
+    font-weight: 700;
+    text-align: center;
+    max-width: 380px;
+}
+
+.zona-dados {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.dados-resultado {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.dados-resultado .dado {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #ffffff;
+    border: 2px solid #334155;
+    border-radius: 8px;
+    font-size: 32px;
+    line-height: 1;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15);
+    user-select: none;
+}
+
+.resultado-suma {
+    font-size: 12px;
+    font-weight: 700;
+    color: #334155;
+    white-space: nowrap;
+}
+
+.tirar-dados {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: white;
+    padding: 8px 18px;
+    font-size: 13.5px;
+    font-weight: 800;
+    border-radius: 8px;
+    width: auto;
+    min-width: 140px;
+    box-shadow: 0 3px 10px rgba(37, 99, 235, 0.28);
+}
+
+.tirar-dados:hover:not(:disabled) {
+    background: linear-gradient(135deg, #1d4ed8, #1e40af);
+}
+
+
+/* =========================================================
+   CASILLAS DEL TABLERO
+   ========================================================= */
+
+.casilla {
+    position: relative;
+    background: #ffffff;
+    border: 1px solid #334155;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    z-index: 2;
+    min-width: 0;
+    min-height: 0;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.casilla:hover {
+    z-index: 10;
+    box-shadow: 0 0 0 2px #0f172a, 0 4px 10px rgba(0, 0, 0, 0.25);
+}
+
+.numero-casilla {
+    position: absolute;
+    top: 2px;
+    left: 3px;
+    font-size: 9.5px;
+    font-weight: 800;
+    color: #475569;
+    z-index: 5;
+}
+
+
+.color-casilla {
+    position: absolute;
+    background: transparent;
+    z-index: 1;
+    display: none; /* Hidden — color now comes from full tile background */
+}
+
+/* =========================================================
+   PALETA MONOPOLY ORIGINAL — 8 GRUPOS DE PROPIEDADES
+   Marrón  #955436  |  Celeste #aae0fa  |  Rosa    #d93a96
+   Naranja #f7941d  |  Rojo    #ed1b24  |  Amarillo #fef200
+   Verde   #1fb25a  |  Azul    #0072bb
+   ========================================================= */
+
+/* ---- MARRÓN (Brown) ---- */
+.grupo-marron {
+    background: #955436;
+    border-color: #6b3a24;
+}
+.grupo-marron .nombre-casilla { color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.55); }
+.grupo-marron .numero-casilla { color: rgba(255,255,255,.8); }
+.grupo-marron .precio-casilla { background: rgba(0,0,0,.38); color: #fff; }
+
+/* ---- CELESTE (Light Blue) ---- */
+.grupo-celeste {
+    background: #aae0fa;
+    border-color: #72c5ef;
+}
+.grupo-celeste .nombre-casilla { color: #0c2a3a; }
+.grupo-celeste .precio-casilla { background: rgba(0,0,0,.18); color: #0c2a3a; }
+
+/* ---- ROSA (Magenta/Pink) ---- */
+.grupo-rosa {
+    background: #d93a96;
+    border-color: #a82676;
+}
+.grupo-rosa .nombre-casilla { color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.55); }
+.grupo-rosa .numero-casilla { color: rgba(255,255,255,.8); }
+.grupo-rosa .precio-casilla { background: rgba(0,0,0,.32); color: #fff; }
+
+/* ---- NARANJA (Orange) ---- */
+.grupo-naranja {
+    background: #f7941d;
+    border-color: #c4720d;
+}
+.grupo-naranja .nombre-casilla { color: #1a0a00; text-shadow: 0 1px 2px rgba(255,255,255,.3); }
+.grupo-naranja .precio-casilla { background: rgba(0,0,0,.22); color: #fff; }
+
+/* ---- ROJO (Red) ---- */
+.grupo-rojo {
+    background: #ed1b24;
+    border-color: #b01018;
+}
+.grupo-rojo .nombre-casilla { color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.6); }
+.grupo-rojo .numero-casilla { color: rgba(255,255,255,.85); }
+.grupo-rojo .precio-casilla { background: rgba(0,0,0,.32); color: #fff; }
+
+/* ---- AMARILLO (Yellow) ---- */
+.grupo-amarillo {
+    background: #fef200;
+    border-color: #c9bf00;
+}
+.grupo-amarillo .nombre-casilla { color: #1a1200; }
+.grupo-amarillo .precio-casilla { background: rgba(0,0,0,.18); color: #1a1200; }
+
+/* ---- VERDE (Green) ---- */
+.grupo-verde {
+    background: #1fb25a;
+    border-color: #158041;
+}
+.grupo-verde .nombre-casilla { color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.55); }
+.grupo-verde .numero-casilla { color: rgba(255,255,255,.8); }
+.grupo-verde .precio-casilla { background: rgba(0,0,0,.28); color: #fff; }
+
+/* ---- AZUL OSCURO (Dark Blue) ---- */
+.grupo-azul-oscuro {
+    background: #0072bb;
+    border-color: #004f85;
+}
+.grupo-azul-oscuro .nombre-casilla { color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.6); }
+.grupo-azul-oscuro .numero-casilla { color: rgba(255,255,255,.85); }
+.grupo-azul-oscuro .precio-casilla { background: rgba(0,0,0,.32); color: #fff; }
+
+/* =========================================================
+   CASILLAS ESPECIALES — COLORES MONOPOLY AUTÉNTICOS
+   ========================================================= */
+
+/* Ferrocarril — negro humo clásico */
+.casilla-ferrocarril {
+    background: #1a1a1a;
+    border-color: #0f0f0f;
+}
+.casilla-ferrocarril .nombre-casilla { color: #f1f5f9; font-weight: 800; }
+.casilla-ferrocarril .numero-casilla { color: rgba(255,255,255,.65); }
+.casilla-ferrocarril .precio-casilla { background: rgba(255,255,255,.15); color: #f1f5f9; }
+
+/* Suerte — naranja/rojo brillante Chance clásico */
+.casilla-suerte {
+    background: #ff7700;
+    border-color: #cc5f00;
+}
+.casilla-suerte .nombre-casilla { color: #fff; font-weight: 800; text-shadow: 0 1px 3px rgba(0,0,0,.5); }
+.casilla-suerte .numero-casilla { color: rgba(255,255,255,.75); }
+
+/* Arca Comunal — azul celeste Chest clásico */
+.casilla-arca {
+    background: #00a2e8;
+    border-color: #0078bb;
+}
+.casilla-arca .nombre-casilla { color: #fff; font-weight: 800; text-shadow: 0 1px 3px rgba(0,0,0,.5); }
+.casilla-arca .numero-casilla { color: rgba(255,255,255,.75); }
+
+/* Impuesto — crema/blanco cálido con acento rojo */
+.casilla-impuesto {
+    background: #fef9e7;
+    border-color: #e8c84a;
+}
+.casilla-impuesto .nombre-casilla { color: #7c1c1c; font-weight: 800; }
+
+/* Servicio — blanco neutro con borde amarillo */
+.casilla-servicio {
+    background: #fffef0;
+    border-color: #d4c024;
+}
+.casilla-servicio .nombre-casilla { color: #1a1a1a; font-weight: 700; }
+
+/* =========================================================
+   ILUSTRACIÓN DEL DESTINO EN CADA CASILLA
+   ========================================================= */
+
+.contenido-casilla {
+    position: relative;
+    z-index: 3;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+    text-align: center;
+    padding: 3px 2px 3px;
+    gap: 1px;
+}
+
+.ilustracion-casilla {
+    flex: 1;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    min-height: 0;
+}
+
+.img-destino {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+    display: block;
+    border-radius: 3px;
+    /* Ligera sombra para que resalte sobre el fondo de color */
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.25));
+}
+
+.icono-casilla {
+    font-size: 18px;
+    line-height: 1;
+}
+
+.nombre-casilla {
+    font-size: 8px;
+    font-weight: 700;
+    line-height: 1.1;
+    overflow-wrap: anywhere;
+    color: #0f172a;
+    background: rgba(255,255,255,0.72);
+    border-radius: 3px;
+    padding: 1px 3px;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+}
+
+/* Casillas con fondo oscuro: nombre sin fondo blanco, texto blanco */
+.grupo-marron .nombre-casilla,
+.grupo-rosa .nombre-casilla,
+.grupo-rojo .nombre-casilla,
+.grupo-verde .nombre-casilla,
+.grupo-azul-oscuro .nombre-casilla,
+.casilla-ferrocarril .nombre-casilla,
+.casilla-suerte .nombre-casilla,
+.casilla-arca .nombre-casilla {
+    background: rgba(0,0,0,0.38);
+    color: #fff;
+}
+
+/* Casillas con fondo claro: texto oscuro */
+.grupo-celeste .nombre-casilla,
+.grupo-naranja .nombre-casilla,
+.grupo-amarillo .nombre-casilla,
+.casilla-impuesto .nombre-casilla,
+.casilla-servicio .nombre-casilla,
+.casilla-especial .nombre-casilla {
+    background: rgba(255,255,255,0.72);
+    color: #0f172a;
+}
+
+/* =========================================================
+   ORIENTACIÓN DE LA BANDA DE COLOR (mantenida para compat.)
+   Solo aplica a casillas sin grupo (especiales sin clase propia)
+   ========================================================= */
+
+.lado-inferior .color-casilla,
+.lado-superior .color-casilla,
+.lado-derecho .color-casilla,
+.lado-izquierdo .color-casilla {
+    display: none;
+}
+
+/* Casilla especial inicio */
+.casilla-especial {
+    background: #fffbeb;
+    border-color: #f7d45a;
+}
+.casilla-especial .nombre-casilla {
+    font-size: 9px;
+    font-weight: 800;
+    color: #7c4a00;
+    background: rgba(255,255,255,0.7);
+}
+
+/* Número casilla en todos */
+.numero-casilla {
+    position: absolute;
+    top: 2px;
+    left: 3px;
+    font-size: 9.5px;
+    font-weight: 800;
+    color: #475569;
+    z-index: 5;
+    text-shadow: 0 1px 2px rgba(255,255,255,0.6);
+}
+
+
+/* Fichas de jugadores */
+.fichas-casilla {
+    position: absolute;
+    left: 50%;
+    bottom: 2px;
+    transform: translateX(-50%);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 2px;
+    width: 90%;
+    z-index: 10;
+}
+
+.ficha-jugador {
+    width: 17px;
+    height: 17px;
+    border-radius: 50%;
+    border: 1.5px solid white;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-size: 9px;
+    font-weight: 800;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+}
+
+.ficha-jugador:hover {
+    transform: scale(1.25);
+    cursor: pointer;
+}
+
+/* Precios en casillas */
+.precio-casilla {
+    position: absolute;
+    z-index: 4;
+    font-size: 7.5px;
+    font-weight: 800;
+    color: #1e293b;
+    background: rgba(255, 255, 255, 0.90);
+    padding: 1px 3px;
+    border-radius: 3px;
+    white-space: nowrap;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+}
+
+.lado-inferior .precio-casilla {
+    bottom: 3px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.lado-superior .precio-casilla {
+    top: 3px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.lado-derecho .precio-casilla {
+    right: 2px;
+    top: 50%;
+    transform: translateY(-50%);
+    writing-mode: vertical-rl;
+}
+
+.lado-izquierdo .precio-casilla {
+    left: 2px;
+    top: 50%;
+    transform: translateY(-50%);
+    writing-mode: vertical-rl;
+}
+
+.casilla-especial .precio-casilla,
+.casilla-suerte .precio-casilla,
+.casilla-arca .precio-casilla,
+.casilla-impuesto .precio-casilla {
+    display: none;
+}
+
+/* Indicador de propietario: punto de color en la esquina superior derecha */
+.propietario-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    z-index: 20;
+    border: 2px solid white;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+    /* El color de fondo se aplica via JS (backgroundColor) */
+}
+
+/* En móvil, más pequeño */
+@media (max-width: 600px) {
+    .propietario-badge {
+        width: 9px;
+        height: 9px;
+        top: -4px;
+        right: -4px;
+        border-width: 1.5px;
+    }
+}
+
+
+/* =========================================================
+   MODAL DE CARTA (SUERTE / ARCA COMUNAL)
+   ========================================================= */
+
+.modal-carta {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(11, 8, 180, 0.65);
+    backdrop-filter: blur(3px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-carta-contenido {
+    background: white;
+    border-radius: 18px;
+    padding: 26px 24px;
+    max-width: 360px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.3);
+    border: 2px solid #2563eb;
+    animation: aparecerModal 0.22s ease-out;
+}
+
+.carta-icono {
+    font-size: 42px;
+    margin-bottom: 8px;
+}
+
+.modal-carta-contenido h3 {
+    margin: 0 0 6px;
+    font-size: 19px;
+    font-weight: 800;
+    color: #1e40af;
+}
+
+.modal-carta-contenido p {
+    font-size: 14px;
+    line-height: 1.45;
+    color: #334155;
+    margin-bottom: 18px;
+}
+
+.modal-carta-contenido .btn {
+    width: 100%;
+    padding: 10px;
+    font-size: 14px;
+}
+
+@keyframes aparecerModal {
+    from {
+        transform: scale(0.88);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+
+/* =========================================================
+   RESPONSIVIDAD (MÓVIL Y TABLET)
+   ========================================================= */
+
+@media (max-width: 768px) {
+    .container {
+        padding: 12px 8px;
+    }
+
+    .card {
+        padding: 24px 18px;
+        margin: 20px auto;
+    }
+
+    .juego-header {
+        margin-bottom: 8px;
+    }
+
+    .juego-header h1 {
+        font-size: 20px;
+    }
+
+    .tablero {
+        width: 96vw;
+        height: 96vw;
+        border-width: 3px;
+    }
+
+    .centro-tablero {
+        padding: 6px;
+    }
+
+    .fila-superior-tablero {
+        max-height: 95px;
+        gap: 4px;
+    }
+
+    .panel-jugador {
+        min-width: 90px;
+        padding: 4px 6px;
+    }
+
+    .panel-jugador h3 {
+        font-size: 11.5px;
+    }
+
+    .panel-jugador p {
+        font-size: 9px;
+    }
+
+    .panel-jugador .dinero-valor {
+        font-size: 11px;
+        padding: 1px 5px;
+    }
+
+    .panel-jugadores-partida {
+        min-width: 120px;
+        padding: 4px 6px;
+        max-height: 95px;
+    }
+
+    .panel-jugadores-partida h3 {
+        font-size: 10px;
+    }
+
+    .panel-propiedades {
+        min-width: 85px;
+        padding: 4px 6px;
+        max-height: 95px;
+    }
+
+    .panel-propiedades h3 {
+        font-size: 10px;
+    }
+
+    .info-casilla {
+        padding: 6px 10px;
+    }
+
+    .info-casilla h3 {
+        font-size: 12px;
+    }
+
+    .info-casilla p {
+        font-size: 10px;
+    }
+
+    #precioCasillaActual {
+        font-size: 11px;
+    }
+
+    .botones-accion .btn {
+        padding: 6px 12px;
+        font-size: 11px;
+        min-width: 120px;
+    }
+
+    .panel-historial {
+        display: none; /* Ocultar historial en móvil pequeño para evitar sobrecarga */
+    }
+
+    .mensaje-turno {
+        font-size: 10px;
+        padding: 3px 8px;
+    }
+
+    .dados-resultado .dado {
+        width: 34px;
+        height: 34px;
+        font-size: 24px;
+    }
+
+    .resultado-suma {
+        font-size: 10px;
+    }
+
+    .tirar-dados {
+        padding: 6px 12px;
+        font-size: 11.5px;
+        min-width: 110px;
+    }
+
+    .numero-casilla {
+        font-size: 7px;
+    }
+
+    .icono-casilla {
+        font-size: 14px;
+    }
+
+    .nombre-casilla {
+        font-size: 6.5px;
+    }
+
+    .precio-casilla {
+        font-size: 5.5px;
+    }
+
+    .ficha-jugador {
+        width: 12px;
+        height: 12px;
+        font-size: 6.5px;
+    }
+}
+
+.gestion-contenido {
+    max-width: 440px;
+}
+
+.gestion-contenido label,
+.gestion-contenido select,
+.gestion-contenido input {
+    display: block;
+    width: 100%;
+    margin: 8px 0;
+    box-sizing: border-box;
+}
+
+.gestion-contenido select,
+.gestion-contenido input {
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    padding: 9px;
+}
+
+.gestion-botones {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+
+/* =========================================================
+   BANNER DE ESTADO DE CONEXIÓN
+   ========================================================= */
+
+.banner-conexion {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 999;
+    text-align: center;
+    padding: 10px 16px;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #ffffff;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+    animation: fadeInCard 0.2s ease-out;
+}
+
+.banner-conexion.banner-info {
+    background: linear-gradient(135deg, #1d4ed8, #2563eb);
+}
+
+.banner-conexion.banner-error {
+    background: linear-gradient(135deg, #b91c1c, #ef4444);
+}
+
+.banner-conexion.banner-ok {
+    background: linear-gradient(135deg, #15803d, #22c55e);
+}
+
+
+/* =========================================================
+   TEMPORIZADOR DE TURNO
+   ========================================================= */
+
+.temporizador-turno {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    max-width: 320px;
+    margin: 0 auto 8px;
+}
+
+.temporizador-riel {
+    flex: 1;
+    height: 8px;
+    border-radius: 999px;
+    background: #e2e8f0;
+    overflow: hidden;
+}
+
+.temporizador-barra {
+    height: 100%;
+    width: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #2563eb, #22c55e);
+    transition: width 0.25s linear, background 0.3s;
+}
+
+.temporizador-turno.temporizador-urgente .temporizador-barra {
+    background: linear-gradient(90deg, #ef4444, #f97316);
+}
+
+.temporizador-texto {
+    font-size: 12px;
+    font-weight: 800;
+    color: #475569;
+    min-width: 30px;
+    text-align: right;
+}
+
+.temporizador-turno.temporizador-urgente .temporizador-texto {
+    color: #dc2626;
+}
+
+
+/* =========================================================
+   BADGE DE JUGADOR DESCONECTADO
+   ========================================================= */
+
+.badge-desconectado {
+    background: #f59e0b;
+    color: white;
+    font-size: 8px;
+    font-weight: 800;
+    padding: 1px 5px;
+    border-radius: 6px;
+}
+
+.jugador-fila.desconectado {
+    opacity: 0.6;
+}
+
+.jugador-fila.desconectado .jugador-fila-nombre {
+    font-style: italic;
+}
+
+
+/* =========================================================
+   CHAT EN VIVO
+   ========================================================= */
+
+.chat-widget {
+    position: fixed;
+    right: 18px;
+    bottom: 18px;
+    z-index: 900;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+    font-family: inherit;
+}
+
+.chat-toggle {
+    position: relative;
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    border: none;
+    background: linear-gradient(135deg, #1d4ed8, #2563eb);
+    color: #ffffff;
+    font-size: 22px;
+    cursor: pointer;
+    box-shadow: 0 6px 18px rgba(37, 99, 235, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.15s;
+}
+
+.chat-toggle:hover {
+    transform: scale(1.05);
+}
+
+.chat-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background: #ef4444;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 800;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    border: 2px solid #ffffff;
+}
+
+.chat-panel {
+    width: 300px;
+    max-width: calc(100vw - 36px);
+    height: 380px;
+    max-height: 60vh;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transform: scale(0.95) translateY(6px);
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.15s ease-out, opacity 0.15s ease-out;
+}
+
+.chat-widget.chat-abierto .chat-panel {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.chat-panel-header {
+    padding: 12px 14px;
+    font-weight: 800;
+    font-size: 14px;
+    color: #ffffff;
+    background: linear-gradient(135deg, #1d4ed8, #2563eb);
+}
+
+.chat-mensajes {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: #f8fafc;
+}
+
+.chat-mensaje {
+    max-width: 85%;
+    padding: 6px 10px;
+    border-radius: 10px;
+    background: #e2e8f0;
+    font-size: 12.5px;
+    color: #1e293b;
+    align-self: flex-start;
+}
+
+.chat-mensaje.chat-mio {
+    align-self: flex-end;
+    background: #dbeafe;
+}
+
+.chat-mensaje-cabecera {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 10.5px;
+    margin-bottom: 2px;
+    color: #475569;
+}
+
+.chat-texto {
+    word-break: break-word;
+    white-space: pre-wrap;
+}
+
+.chat-mensaje.chat-sistema {
+    align-self: center;
+    background: transparent;
+    color: #94a3b8;
+    font-size: 11px;
+    font-style: italic;
+    text-align: center;
+    max-width: 100%;
+}
+
+.chat-formulario {
+    display: flex;
+    gap: 6px;
+    padding: 10px;
+    border-top: 1px solid #e2e8f0;
+    background: #ffffff;
+}
+
+.chat-formulario input {
+    flex: 1;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 999px;
+    padding: 9px 14px;
+    font-size: 13px;
+    outline: none;
+    background: #f8fafc;
+}
+
+.chat-formulario input:focus {
+    border-color: #2563eb;
+    background: #ffffff;
+}
+
+.chat-enviar {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+@media (max-width: 480px) {
+    .chat-widget {
+        right: 12px;
+        bottom: 12px;
+    }
+    .chat-panel {
+        width: calc(100vw - 24px);
+        height: 65vh;
+    }
+}

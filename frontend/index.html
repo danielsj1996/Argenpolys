@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Juego de Mesa Online</title>
+
+    <link rel="stylesheet" href="css/style.css">
+
+</head>
+
+
+<body>
+
+    <!-- ==========================================
+         BANNER DE ESTADO DE CONEXIÓN
+    =========================================== -->
+
+    <div id="bannerConexion" class="banner-conexion oculto">
+        <span id="bannerConexionTexto"></span>
+    </div>
+
+    <main class="container">
+
+
+        <!-- ==========================================
+             PANTALLA INICIO
+        =========================================== -->
+
+        <section id="pantallaInicio" class="card">
+
+            <h1>🎲 Juego de Mesa Online</h1>
+
+            <p class="descripcion">
+                Jugá con tus amigos en una partida online.
+            </p>
+
+
+            <div class="menu-inicio">
+
+                <button id="btnMostrarCrear" class="btn principal">
+                    🎮 Crear partida
+                </button>
+
+
+                <button id="btnMostrarUnirse" class="btn secundario">
+                    👥 Unirse a partida
+                </button>
+
+            </div>
+
+
+            <p id="mensajeInicio" class="mensaje"></p>
+
+        </section>
+
+
+
+        <!-- ==========================================
+             PANTALLA CREAR PARTIDA
+        =========================================== -->
+
+        <section id="pantallaCrear" class="card oculto">
+
+            <button id="btnVolverInicioCrear" class="btn volver">
+                ← Volver
+            </button>
+
+
+            <h1>🎮 Crear partida</h1>
+
+            <p class="descripcion">
+                Ingresá tu nombre para crear una nueva partida.
+            </p>
+
+
+            <div class="campo">
+
+                <label for="nombreCrear">
+                    Tu nombre
+                </label>
+
+                <input type="text" id="nombreCrear" placeholder="Ingresá tu nombre" maxlength="20" autocomplete="off">
+
+            </div>
+
+
+            <button id="btnCrearSala" class="btn principal">
+                🎮 Crear partida
+            </button>
+
+
+            <p id="mensajeCrear" class="mensaje"></p>
+
+        </section>
+
+
+
+        <!-- ==========================================
+             PANTALLA UNIRSE
+        =========================================== -->
+
+        <section id="pantallaUnirse" class="card oculto">
+
+            <button id="btnVolverInicioUnirse" class="btn volver">
+                ← Volver
+            </button>
+
+
+            <h1>👥 Unirse a partida</h1>
+
+            <p class="descripcion">
+                Ingresá el código que te compartió el anfitrión.
+            </p>
+
+            <div class="campo">
+                
+                <label for="nombreUnirse">
+                    Tu nombre
+                </label>
+                
+                <input type="text" id="nombreUnirse" placeholder="Ingresá tu nombre" maxlength="20" autocomplete="off">
+                
+            </div>
+
+            <div class="campo">
+
+                <label for="codigoSala">
+                    Código de partida
+                </label>
+
+                <input type="text" id="codigoSala" placeholder="Ej: ABC123" maxlength="6" autocomplete="off">
+
+            </div>
+
+
+            <button id="btnUnirseSala" class="btn secundario">
+                👥 Unirse a partida
+            </button>
+
+
+            <p id="mensajeUnirse" class="mensaje"></p>
+
+        </section>
+
+
+
+        <!-- ==========================================
+             PANTALLA SALA
+        =========================================== -->
+
+        <section id="pantallaSala" class="card oculto">
+
+            <div class="sala-header">
+
+                <div>
+
+                    <p class="texto-pequeno">
+                        Código de sala
+                    </p>
+
+                    <h1 id="codigoMostrar">
+                        ABC123
+                    </h1>
+
+                </div>
+
+
+                <span id="estadoSala" class="estado">
+                    Esperando jugadores
+                </span>
+
+            </div>
+
+
+            <div class="codigo-info">
+
+                <p>
+                    Compartí este código con tus amigos:
+                </p>
+
+                <strong id="codigoCompartir">
+                    ABC123
+                </strong>
+
+                <button id="btnCopiarCodigo" class="btn btn-copiar" type="button">
+                    📋 Copiar código
+                </button>
+
+            </div>
+
+
+            <div class="jugadores">
+
+                <div class="jugadores-header">
+
+                    <h2>
+                        Jugadores
+                    </h2>
+
+                    <span id="contadorJugadores">
+                        0/8
+                    </span>
+
+                </div>
+
+
+                <ul id="listaJugadores"></ul>
+
+            </div>
+
+
+            <div id="zonaAnfitrion" class="zona-anfitrion oculto">
+
+                <button id="btnIniciarPartida" class="btn iniciar">
+                    ▶ Iniciar partida
+                </button>
+
+                <p>
+                    Podés comenzar cuando haya al menos 2 jugadores listos.
+                </p>
+
+            </div>
+
+
+            <div id="esperandoAnfitrion" class="esperando oculto">
+
+                <p>
+                    ⏳ Esperando a que el anfitrión inicie la partida...
+                </p>
+
+            </div>
+
+
+            <p id="mensajeSala" class="mensaje"></p>
+
+        </section>
+
+
+
+        <!-- ==========================================
+             PANTALLA PARTIDA
+        =========================================== -->
+
+        <section id="pantallaPartida" class="pantalla-partida oculto">
+
+            <div class="juego-header">
+
+                <div>
+
+                    <h1>
+                        🇦🇷 Argentina
+                    </h1>
+
+                    <p>
+                        Partida:
+                        <strong id="codigoPartida"></strong>
+                    </p>
+
+                </div>
+
+
+                <div class="estado-partida">
+                    🎲 Partida en curso
+                </div>
+
+            </div>
+
+
+            <div id="tablero" class="tablero">
+
+                <div class="centro-tablero">
+
+
+                    <!-- ==========================================
+                         FILA SUPERIOR: JUGADOR, PARTICIPANTES, PROPIEDADES
+                    =========================================== -->
+
+                    <div class="fila-superior-tablero">
+
+                        <div class="panel-jugador">
+
+                            <h3 id="nombreJugadorPartida">
+                                👤 Jugador
+                            </h3>
+
+                            <p id="posicionJugadorPartida">
+                                📍 Casilla: Inicio
+                            </p>
+
+                            <div id="dineroJugador" class="dinero-valor">
+                                $15.000
+                            </div>
+
+                        </div>
+
+
+                        <div id="panelJugadoresPartida" class="panel-jugadores-partida">
+
+                            <h3>
+                                👥 Jugadores
+                            </h3>
+
+                            <div id="listaJugadoresPartida" class="lista-jugadores-partida"></div>
+
+                        </div>
+
+
+                        <div class="panel-propiedades">
+
+                            <h3>
+                                🏠 Mis propiedades
+                            </h3>
+
+                            <div id="listaPropiedades">
+
+                                <p class="sin-propiedades">
+                                    No tenés propiedades todavía.
+                                </p>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ==========================================
+                         INFORMACIÓN DE CASILLA Y ACCIONES
+                    =========================================== -->
+
+                    <div class="zona-acciones">
+
+                        <div id="infoCasilla" class="info-casilla">
+
+                            <h3 id="nombreCasillaActual">
+                                📍 Esperando movimiento
+                            </h3>
+
+                            <p id="tipoCasillaActual">
+                                Tirar los dados para comenzar
+                            </p>
+
+                            <p id="precioCasillaActual"></p>
+
+                        </div>
+
+
+                        <div class="botones-accion">
+
+                            <button id="btnComprarPropiedad" class="btn comprar-propiedad" style="display: none;">
+                                🏠 Comprar propiedad
+                            </button>
+
+                            <button id="btnSubastar" class="btn secundario" style="display: none;">
+                                🔨 Subastar propiedad
+                            </button>
+
+                            <button id="btnGestionarPropiedades" class="btn secundario">
+                                🏘️ Gestionar propiedades
+                            </button>
+
+                            <button id="btnIntercambiar" class="btn secundario">
+                                🤝 Intercambiar
+                            </button>
+
+                            <button id="btnUsarTarjetaCarcel" class="btn secundario" style="display: none;">
+                                🎫 Usar salida de cárcel
+                            </button>
+
+                            <button id="btnPagarDeuda" class="btn secundario" style="display: none;">
+                                💸 Pagar deuda
+                            </button>
+
+                            <button id="btnDeclararBancarrota" class="btn secundario" style="display: none;">
+                                ⚠️ Declarar bancarrota
+                            </button>
+
+                            <button id="btnPagarFianza" class="btn pagar-fianza" style="display: none;">
+                                🔓 Pagar fianza ($500)
+                            </button>
+
+                            <button id="btnPasarTurno" class="btn pasar-turno" style="display: none;">
+                                ⏭️ Terminar turno
+                            </button>
+
+                        </div>
+
+
+                        <!-- HISTORIAL DE EVENTOS -->
+                        <div id="panelHistorial" class="panel-historial">
+                            <h4>📜 Registro de jugadas</h4>
+                            <div id="historialEventos" class="historial-eventos"></div>
+                        </div>
+
+                    </div>
+
+
+                    <!-- ==========================================
+                         FILA INFERIOR: MENSAJE DE TURNO Y DADOS
+                    =========================================== -->
+
+                    <div class="fila-inferior-tablero">
+
+                        <div id="temporizadorTurno" class="temporizador-turno oculto" title="Tiempo de turno">
+                            <div class="temporizador-riel">
+                                <div id="temporizadorBarra" class="temporizador-barra"></div>
+                            </div>
+                            <span id="temporizadorTexto" class="temporizador-texto">60s</span>
+                        </div>
+
+                        <p id="mensajeDados" class="mensaje mensaje-turno"></p>
+
+                        <div class="zona-dados">
+
+                            <div class="dados-resultado">
+
+                                <div class="dado" id="dado1">
+                                    ⚀
+                                </div>
+
+                                <div class="dado" id="dado2">
+                                    ⚀
+                                </div>
+
+                            </div>
+
+
+                            <div class="resultado-suma">
+
+                                Suma:
+
+                                <strong id="sumaDados">
+                                    2
+                                </strong>
+
+                            </div>
+
+
+                            <button id="btnTirarDados" class="btn tirar-dados">
+                                🎲 Tirar dados
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- ==========================================
+         MODAL DE CARTA (SUERTE / ARCA)
+    =========================================== -->
+
+    <div id="modalCarta" class="modal-carta oculto">
+        <div class="modal-carta-contenido">
+            <div id="cartaIcono" class="carta-icono">🎴</div>
+            <h3 id="cartaTitulo">Suerte</h3>
+            <p id="cartaTexto">Texto de la carta</p>
+            <button id="btnCerrarCarta" class="btn principal">Entendido</button>
+        </div>
+    </div>
+
+    <div id="modalGestion" class="modal-carta oculto">
+        <div class="modal-carta-contenido gestion-contenido">
+            <h3 id="gestionTitulo">Gestionar</h3>
+            <div id="gestionContenido"></div>
+            <button id="btnCerrarGestion" class="btn secundario">Cerrar</button>
+        </div>
+    </div>
+
+
+    <!-- ==========================================
+         CHAT EN VIVO
+    =========================================== -->
+
+    <div id="chatWidget" class="chat-widget oculto">
+
+        <button id="btnChatToggle" class="chat-toggle" type="button" title="Chat">
+            💬
+            <span id="chatBadgeNuevo" class="chat-badge oculto">1</span>
+        </button>
+
+        <div class="chat-panel">
+
+            <div class="chat-panel-header">
+                <span>💬 Chat de la partida</span>
+            </div>
+
+            <div id="chatMensajes" class="chat-mensajes"></div>
+
+            <form id="chatFormulario" class="chat-formulario">
+                <input id="chatInput" type="text" placeholder="Escribí un mensaje..." maxlength="300" autocomplete="off">
+                <button type="submit" class="btn principal chat-enviar">➤</button>
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <!-- ==========================================
+         SOCKET.IO
+    =========================================== -->
+
+    <script src="/socket.io/socket.io.js"></script>
+
+
+    <!-- ==========================================
+         DATOS DEL TABLERO
+    =========================================== -->
+
+    <script src="data/casillas.js"></script>
+
+
+    <!-- ==========================================
+         LÓGICA DEL TABLERO
+    =========================================== -->
+
+    <script src="js/game.js"></script>
+
+
+    <!-- ==========================================
+         LÓGICA DE LA APLICACIÓN
+    =========================================== -->
+
+    <script src="js/app.js"></script>
+
+</body>
+
+</html>

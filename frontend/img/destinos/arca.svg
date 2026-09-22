@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="8" fill="#00A2E8"/>
+  <!-- Borde decorativo -->
+  <rect x="4" y="4" width="56" height="56" rx="6" fill="none" stroke="#FFFFFF" stroke-width="2"/>
+  <!-- Cofre del tesoro de madera con herrajes dorados -->
+  <!-- Base cofre -->
+  <rect x="12" y="30" width="40" height="22" fill="#78350F" rx="3"/>
+  <rect x="12" y="30" width="40" height="22" fill="none" stroke="#D97706" stroke-width="3" rx="3"/>
+  <!-- Tapa curvada del cofre -->
+  <path d="M12,30 Q32,14 52,30 Z" fill="#92400E" stroke="#D97706" stroke-width="3"/>
+  <!-- Cerradura de oro -->
+  <rect x="28" y="28" width="8" height="8" fill="#FBBF24" rx="2"/>
+  <circle cx="32" cy="32" r="1.5" fill="#1E293B"/>
+  <!-- Monedas de oro rebosando -->
+  <circle cx="22" cy="27" r="3" fill="#FDE047"/>
+  <circle cx="42" cy="27" r="3" fill="#FDE047"/>
+</svg>

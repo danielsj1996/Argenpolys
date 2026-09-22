@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="8" fill="#E0F2FE"/>
+  <rect x="0" y="52" width="64" height="12" fill="#15803D"/>
+  <!-- Base de la Av. 9 de Julio / asfalto -->
+  <rect x="6" y="50" width="52" height="8" fill="#334155" rx="1"/>
+  <!-- Cuerpo del Obelisco Porteño -->
+  <polygon points="28,14 36,14 38,50 26,50" fill="#F8FAFC"/>
+  <!-- Cara lateral con sombra -->
+  <polygon points="32,14 36,14 38,50 32,50" fill="#CBD5E1"/>
+  <!-- Cúspide piramidal -->
+  <polygon points="28,14 32,6 36,14" fill="#E2E8F0"/>
+  <!-- Bandera Argentina de fondo -->
+  <circle cx="16" cy="18" r="6" fill="#F59E0B"/>
+</svg>

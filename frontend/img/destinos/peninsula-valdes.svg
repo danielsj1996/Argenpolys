@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="8" fill="#D4E6F1"/>
+  <!-- Océano Atlántico patagónico -->
+  <rect x="0" y="32" width="64" height="32" fill="#1B4F72"/>
+  <path d="M0,32 Q16,28 32,32 Q48,36 64,32 L64,64 L0,64 Z" fill="#2874A6"/>
+  <!-- Cola de ballena franca emergiendo (Fluking) -->
+  <path d="M32,44 C30,36 14,24 10,16 C20,18 28,26 32,34 C36,26 44,18 54,16 C50,24 34,36 32,44 Z" fill="#1B2631"/>
+  <!-- Espuma blanca de agua -->
+  <ellipse cx="32" cy="44" rx="14" ry="3" fill="#EBF5FB" opacity="0.9"/>
+  <!-- Faro en el acantilado -->
+  <polygon points="56,32 64,28 64,36" fill="#A04000"/>
+</svg>

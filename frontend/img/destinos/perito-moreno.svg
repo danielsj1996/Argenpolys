@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="8" fill="#D6EAF8"/>
+  <!-- Pared inmensa de hielo del glaciar -->
+  <polygon points="0,50 0,16 14,24 26,14 38,22 50,14 64,26 64,50" fill="#AED6F1"/>
+  <!-- Grietas profundas azul intenso -->
+  <polygon points="8,22 14,24 12,50 6,50" fill="#2980B9"/>
+  <polygon points="22,18 26,14 28,50 20,50" fill="#1B4F72"/>
+  <polygon points="34,20 38,22 40,50 32,50" fill="#2980B9"/>
+  <polygon points="46,16 50,14 52,50 44,50" fill="#1B4F72"/>
+  <!-- Picos de hielo blancos -->
+  <polygon points="0,16 6,24 12,18 20,26 26,14 34,22 42,16 50,14 58,24 64,26 64,28 0,28" fill="#FFFFFF" opacity="0.85"/>
+  <!-- Lago Argentino con bloques flotando -->
+  <rect x="0" y="48" width="64" height="16" fill="#16A085"/>
+  <rect x="18" y="52" width="8" height="4" fill="#EBF5FB" rx="1"/>
+  <rect x="42" y="54" width="10" height="4" fill="#FFFFFF" rx="1"/>
+</svg>

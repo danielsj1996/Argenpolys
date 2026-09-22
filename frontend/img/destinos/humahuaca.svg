@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="8" fill="#FDEBD0"/>
+  <circle cx="48" cy="18" r="8" fill="#F39C12"/>
+  <!-- Montañas quebrada -->
+  <polygon points="0,52 18,24 38,52" fill="#D35400"/>
+  <polygon points="20,54 42,20 64,54" fill="#E67E22"/>
+  <polygon points="12,56 32,32 50,56" fill="#BA4A00" opacity="0.8"/>
+  <rect x="0" y="50" width="64" height="14" fill="#C0392B"/>
+  <!-- Cactus cardón -->
+  <rect x="12" y="36" width="4" height="16" rx="2" fill="#27AE60"/>
+  <path d="M8,42 L12,42 L12,44 L8,44 L8,40 L10,40 L10,42" fill="#27AE60"/>
+  <path d="M16,40 L20,40 L20,44 L16,44 L16,46 L14,46 L14,40" fill="#27AE60"/>
+</svg>

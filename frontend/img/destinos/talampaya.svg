@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="8" fill="#FDEBD0"/>
+  <!-- Paredón gigante rojizo de Talampaya -->
+  <path d="M4,64 L4,18 Q16,14 26,22 L28,64 Z" fill="#C0392B"/>
+  <path d="M26,64 L26,20 Q40,16 58,26 L60,64 Z" fill="#A93226"/>
+  <path d="M12,20 L16,64 L10,64 Z" fill="#78281F" opacity="0.5"/>
+  <path d="M40,24 L44,64 L36,64 Z" fill="#78281F" opacity="0.4"/>
+  <!-- Desierto al pie -->
+  <rect x="0" y="54" width="64" height="10" fill="#E59866"/>
+  <!-- Cóndor andino volando -->
+  <path d="M38,10 Q43,6 46,10 Q49,6 54,10 Q46,12 38,10 Z" fill="#1C2833"/>
+</svg>

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="8" fill="#E8F8F5"/>
+  <!-- Montañas patagónicas -->
+  <polygon points="0,42 20,18 40,42" fill="#5D6D7E"/>
+  <polygon points="26,42 46,20 64,42" fill="#7F8C8D"/>
+  <polygon points="20,18 24,24 16,24" fill="#FFFFFF"/>
+  <polygon points="46,20 50,26 42,26" fill="#FFFFFF"/>
+  <!-- Lago cristalino -->
+  <rect x="0" y="38" width="64" height="16" fill="#1ABC9C"/>
+  <!-- Ruta serpenteante -->
+  <path d="M0,58 Q24,46 44,56 Q56,62 64,54" stroke="#BDC3C7" stroke-width="6" fill="none"/>
+  <!-- Pinos patagónicos -->
+  <polygon points="8,52 4,60 12,60" fill="#145A32"/>
+  <polygon points="56,46 52,56 60,56" fill="#145A32"/>
+</svg>

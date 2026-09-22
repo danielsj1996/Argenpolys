@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="8" fill="#FEF2F2"/>
+  <rect x="4" y="4" width="56" height="56" rx="6" fill="none" stroke="#EF4444" stroke-width="2"/>
+  <!-- Anillo de diamante de impuesto de lujo -->
+  <circle cx="32" cy="40" r="14" fill="none" stroke="#D97706" stroke-width="4"/>
+  <!-- Diamante facetado resplandeciente -->
+  <polygon points="32,10 44,20 32,28 20,20" fill="#38BDF8"/>
+  <polygon points="32,10 37,20 32,28 27,20" fill="#BAE6FD"/>
+  <line x1="20" y1="20" x2="44" y2="20" stroke="#0284C7" stroke-width="1"/>
+  <!-- Destellos -->
+  <circle cx="16" cy="14" r="2" fill="#F59E0B"/>
+  <circle cx="48" cy="14" r="2" fill="#F59E0B"/>
+</svg>

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="8" fill="#EBF5FB"/>
+  <!-- Cordillera andina austral -->
+  <polygon points="4,40 24,18 44,40" fill="#5D6D7E"/>
+  <polygon points="28,40 48,22 64,40" fill="#85929E"/>
+  <polygon points="24,18 28,24 20,24" fill="#FFFFFF"/>
+  <!-- Lago Argentino azul turquesa -->
+  <rect x="0" y="38" width="64" height="18" fill="#0E6251"/>
+  <!-- Témpano de hielo flotante -->
+  <polygon points="18,48 24,42 34,44 38,50 22,52" fill="#E8F8F5"/>
+  <polygon points="24,42 34,44 32,48 22,46" fill="#A3E4D7"/>
+  <!-- Estepa patagónica amarilla -->
+  <rect x="0" y="52" width="64" height="12" fill="#D4AC0D"/>
+</svg>
