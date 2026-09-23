@@ -103,8 +103,8 @@ let haTiradoDadosEsteTurno = false;
 // de antes" después de un corte de wifi, una recarga de página o un celular
 // que se quedó sin batería un rato.
 
-const CLAVE_TOKEN = 'monopoly_token';
-const CLAVE_SESION = 'monopoly_sesion';
+const CLAVE_TOKEN = 'argenpoly_token';
+const CLAVE_SESION = 'argenpoly_sesion';
 
 function obtenerToken() {
     let token = localStorage.getItem(CLAVE_TOKEN);
@@ -734,7 +734,7 @@ function actualizarMisPropiedades() {
         const tarjeta = document.createElement('div');
         tarjeta.classList.add('propiedad-card');
 
-        // Determine color class based on group (Monopoly palette) or category
+        // Determine color class based on group (argenpoly palette) or category
         const grupoClass = propiedad.grupo ? `grupo-${propiedad.grupo}` : '';
         const categoriaClass = !propiedad.grupo ? `cat-${propiedad.categoria}` : '';
 

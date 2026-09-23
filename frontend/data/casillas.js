@@ -1,6 +1,6 @@
 // ==========================================
 // CASILLAS DEL TABLERO (40 CASILLAS)
-// Paleta Oficial Monopoly & Temática Argentina
+// Paleta Oficial argenpolys & Temática Argentina
 // ==========================================
 
 const casillas = [

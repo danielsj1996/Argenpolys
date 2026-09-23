@@ -1600,26 +1600,11 @@ io.on('connection', (socket) => {
 // INICIAR SERVIDOR
 // ==========================================
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
-server.listen(
-    PORT,
-    () => {
-
-        console.log(
-            '===================================='
-        );
-
-        console.log(
-            'Servidor Monopoly iniciado'
-        );
-
-        console.log(
-            `http://localhost:${PORT}`
-        );
-
-        console.log(
-            '===================================='
-        );
-    }
-);
+server.listen(PORT, () => {
+    console.log('====================================');
+    console.log('Servidor Argenpolys iniciado');
+    console.log(`Puerto: ${PORT}`);
+    console.log('====================================');
+});

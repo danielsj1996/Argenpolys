@@ -712,7 +712,7 @@ body {
     background: #94a3b8; /* fallback */
 }
 
-/* Monopoly color swatches para el panel de propiedades */
+/* Argenpolys color swatches para el panel de propiedades */
 .propiedad-color.grupo-marron     { background: #955436; }
 .propiedad-color.grupo-celeste    { background: #aae0fa; border: 1px solid #72c5ef; }
 .propiedad-color.grupo-rosa       { background: #d93a96; }
@@ -1023,7 +1023,7 @@ body {
 }
 
 /* =========================================================
-   PALETA MONOPOLY ORIGINAL — 8 GRUPOS DE PROPIEDADES
+   PALETA Argenpolys ORIGINAL — 8 GRUPOS DE PROPIEDADES
    Marrón  #955436  |  Celeste #aae0fa  |  Rosa    #d93a96
    Naranja #f7941d  |  Rojo    #ed1b24  |  Amarillo #fef200
    Verde   #1fb25a  |  Azul    #0072bb
@@ -1099,7 +1099,7 @@ body {
 .grupo-azul-oscuro .precio-casilla { background: rgba(0,0,0,.32); color: #fff; }
 
 /* =========================================================
-   CASILLAS ESPECIALES — COLORES MONOPOLY AUTÉNTICOS
+   CASILLAS ESPECIALES — COLORES Argenpolys AUTÉNTICOS
    ========================================================= */
 
 /* Ferrocarril — negro humo clásico */
