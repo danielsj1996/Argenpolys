@@ -265,13 +265,13 @@ const casillas = [
     },
     {
         numero: 28,
-        nombre: "Parque Nacional Los Glaciares",
+        nombre: "Casa Historica de Tucumán",
         categoria: "turismo",
         grupo: "amarillo",
         precio: 5000,
         alquiler: 500,
         icono: "🧊",
-        imagen: "img/destinos/glaciares.jpg"
+        imagen: "img/destinos/casa-historica.jpg"
     },
     {
         numero: 29,

@@ -3285,7 +3285,14 @@ socket.on(
     'estado_economico_actualizado',
     estado => {
 
-        if (!salaActual) return;
+        if (!salaActual) {
+            return;
+        }
+
+
+        // -----------------------------------------
+        // ACTUALIZAR ECONOMÍA DE LA SALA
+        // -----------------------------------------
 
         salaActual.propiedades =
             estado.propiedades;
@@ -3296,20 +3303,57 @@ socket.on(
         salaActual.hipotecas =
             estado.hipotecas;
 
+
+        // -----------------------------------------
+        // ACTUALIZAR JUGADORES
+        // -----------------------------------------
+
         jugadoresPartida =
             estado.jugadores;
 
         salaActual.jugadores =
             estado.jugadores;
 
+
+        // -----------------------------------------
+        // ACTUALIZAR PROPIETARIOS DEL TABLERO
+        // -----------------------------------------
+
         window.actualizarPropietariosTablero?.(
             salaActual.propiedades,
             jugadoresPartida
         );
 
+
+        // -----------------------------------------
+        // ACTUALIZAR EDIFICIOS 3D
+        // -----------------------------------------
+
+        window.actualizarEdificios3D?.(
+            salaActual.edificios
+        );
+
+
+        // -----------------------------------------
+        // ACTUALIZAR MIS PROPIEDADES
+        // -----------------------------------------
+
         actualizarMisPropiedades();
+
+
+        // -----------------------------------------
+        // ACTUALIZAR DINERO
+        // -----------------------------------------
+
         actualizarDineroJugador();
+
+
+        // -----------------------------------------
+        // ACTUALIZAR LISTA DE JUGADORES
+        // -----------------------------------------
+
         actualizarJugadoresPartida();
+
     }
 );
 

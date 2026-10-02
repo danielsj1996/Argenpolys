@@ -1086,71 +1086,71 @@ io.on('connection', (socket) => {
 
     });
 
-function finalizarPartidaSiQuedaUnJugador(
-    codigo,
-    sala,
-    motivo = 'ultimo_jugador'
-) {
-
-    if (
-        !sala ||
-        sala.estado !== 'jugando' ||
-        sala.jugadores.length !== 1
-    ) {
-        return false;
-    }
-
-    // Detener el temporizador del turno.
-    limpiarTemporizadorTurno(codigo);
-
-    // Cancelar cualquier subasta pendiente.
-    if (sala.subasta?.timer) {
-        clearTimeout(sala.subasta.timer);
-    }
-
-    sala.subasta = null;
-
-    const ganador = sala.jugadores[0];
-
-    sala.estado = 'finalizada';
-
-    sala.ganador = {
-        id: ganador.id,
-        nombre: ganador.nombre
-    };
-
-    console.log(
-        `🏆 ${ganador.nombre} ganó la partida ${codigo}. Motivo: ${motivo}`
-    );
-
-    // Actualizar el estado de la sala para los jugadores restantes.
-    io.to(codigo).emit(
-        'sala_actualizada',
-        sala
-    );
-
-    // Actualizar estado económico.
-    emitirEstadoEconomico(
-        io,
+    function finalizarPartidaSiQuedaUnJugador(
         codigo,
-        sala
-    );
+        sala,
+        motivo = 'ultimo_jugador'
+    ) {
 
-    // Avisar que la partida terminó.
-    io.to(codigo).emit(
-        'partida_finalizada',
-        {
-            motivo,
-            ganador: {
-                id: ganador.id,
-                nombre: ganador.nombre
-            },
-            sala
+        if (
+            !sala ||
+            sala.estado !== 'jugando' ||
+            sala.jugadores.length !== 1
+        ) {
+            return false;
         }
-    );
 
-    return true;
-}
+        // Detener el temporizador del turno.
+        limpiarTemporizadorTurno(codigo);
+
+        // Cancelar cualquier subasta pendiente.
+        if (sala.subasta?.timer) {
+            clearTimeout(sala.subasta.timer);
+        }
+
+        sala.subasta = null;
+
+        const ganador = sala.jugadores[0];
+
+        sala.estado = 'finalizada';
+
+        sala.ganador = {
+            id: ganador.id,
+            nombre: ganador.nombre
+        };
+
+        console.log(
+            `🏆 ${ganador.nombre} ganó la partida ${codigo}. Motivo: ${motivo}`
+        );
+
+        // Actualizar el estado de la sala para los jugadores restantes.
+        io.to(codigo).emit(
+            'sala_actualizada',
+            sala
+        );
+
+        // Actualizar estado económico.
+        emitirEstadoEconomico(
+            io,
+            codigo,
+            sala
+        );
+
+        // Avisar que la partida terminó.
+        io.to(codigo).emit(
+            'partida_finalizada',
+            {
+                motivo,
+                ganador: {
+                    id: ganador.id,
+                    nombre: ganador.nombre
+                },
+                sala
+            }
+        );
+
+        return true;
+    }
     // ======================================
     // TIRAR DADOS
     // ======================================
@@ -2086,12 +2086,13 @@ function finalizarPartidaSiQuedaUnJugador(
         'gestionar_edificio',
         (datos, callback) => {
 
+            const codigo =
+                datos?.codigo
+                    ?.trim()
+                    .toUpperCase();
+
             const sala =
-                obtenerSala(
-                    datos?.codigo
-                        ?.trim()
-                        .toUpperCase()
-                );
+                obtenerSala(codigo);
 
             const jugador =
                 jugadorActivo(
@@ -2110,30 +2111,110 @@ function finalizarPartidaSiQuedaUnJugador(
             const accion =
                 datos?.accion;
 
+
+            // --------------------------------------
+            // VALIDACIONES GENERALES
+            // --------------------------------------
+
+            if (!jugador) {
+
+                return callback?.({
+                    ok: false,
+                    mensaje:
+                        'La partida no está activa o el jugador no está disponible.'
+                });
+            }
+
+
+            // --------------------------------------
+            // SOLO DURANTE EL TURNO DEL JUGADOR
+            // --------------------------------------
+
             if (
-                !jugador ||
-                !casilla?.grupo ||
-                sala.propiedades[numero] !==
-                jugador.id ||
-                !tieneGrupoCompleto(
-                    sala,
-                    jugador.id,
-                    casilla.grupo
-                ) ||
-                sala.hipotecas[numero]
+                sala.turno !== socket.id
             ) {
 
                 return callback?.({
                     ok: false,
                     mensaje:
-                        'Necesitás el grupo completo sin hipotecas.'
+                        'Solo podés construir o vender edificios durante tu turno.'
                 });
             }
+
+
+            // --------------------------------------
+            // VALIDAR PROPIEDAD
+            // --------------------------------------
+
+            if (
+                !casilla?.grupo ||
+                sala.propiedades[numero] !== jugador.id
+            ) {
+
+                return callback?.({
+                    ok: false,
+                    mensaje:
+                        'La propiedad no te pertenece o no permite edificios.'
+                });
+            }
+
+
+            // --------------------------------------
+            // VALIDAR GRUPO COMPLETO
+            // --------------------------------------
+
+            if (
+                !tieneGrupoCompleto(
+                    sala,
+                    jugador.id,
+                    casilla.grupo
+                )
+            ) {
+
+                return callback?.({
+                    ok: false,
+                    mensaje:
+                        'Necesitás tener el grupo completo para construir o vender edificios.'
+                });
+            }
+
+
+            // --------------------------------------
+            // OBTENER GRUPO
+            // --------------------------------------
 
             const grupo =
                 propiedadesDelGrupo(
                     casilla.grupo
                 );
+
+
+            // --------------------------------------
+            // NINGUNA PROPIEDAD DEL GRUPO
+            // PUEDE ESTAR HIPOTECADA
+            // --------------------------------------
+
+            const grupoConHipoteca =
+                grupo.some(
+                    propiedad =>
+                        sala.hipotecas?.[
+                        propiedad.numero
+                        ]
+                );
+
+            if (grupoConHipoteca) {
+
+                return callback?.({
+                    ok: false,
+                    mensaje:
+                        'No podés construir ni vender edificios mientras una propiedad del grupo esté hipotecada.'
+                });
+            }
+
+
+            // --------------------------------------
+            // NIVELES ACTUALES
+            // --------------------------------------
 
             const nivel =
                 nivelEdificio(
@@ -2143,43 +2224,129 @@ function finalizarPartidaSiQuedaUnJugador(
 
             const niveles =
                 grupo.map(
-                    c =>
+                    propiedad =>
                         nivelEdificio(
                             sala,
-                            c.numero
+                            propiedad.numero
                         )
                 );
 
-            const costo =
-                costoEdificio(casilla);
 
-            if (accion === 'construir') {
+            // --------------------------------------
+            // COSTO DEL EDIFICIO
+            // --------------------------------------
+
+            const costo =
+                costoEdificio(
+                    casilla
+                );
+
+
+            // ======================================
+            // CONSTRUIR
+            // ======================================
+
+            if (
+                accion === 'construir'
+            ) {
+
+                // ----------------------------------
+                // MÁXIMO NIVEL: HOTEL
+                // ----------------------------------
 
                 if (
-                    nivel >= 5 ||
-                    nivel !==
-                    Math.min(...niveles) ||
-                    jugador.dinero < costo
+                    nivel >= 5
                 ) {
 
                     return callback?.({
                         ok: false,
                         mensaje:
-                            'Construcción inválida: edificá parejo y verificá tu dinero.'
+                            'Esta propiedad ya tiene un hotel.'
                     });
                 }
+
+
+                // ----------------------------------
+                // CONSTRUCCIÓN PAREJA
+                // ----------------------------------
+
+                if (
+                    nivel !==
+                    Math.min(...niveles)
+                ) {
+
+                    return callback?.({
+                        ok: false,
+                        mensaje:
+                            'Debés construir de forma pareja en todo el grupo.'
+                    });
+                }
+
+
+                // ----------------------------------
+                // DINERO SUFICIENTE
+                // ----------------------------------
+
+                if (
+                    jugador.dinero <
+                    costo
+                ) {
+
+                    return callback?.({
+                        ok: false,
+                        mensaje:
+                            `Necesitás $${costo.toLocaleString('es-AR')} para construir.`
+                    });
+                }
+
+
+                // ----------------------------------
+                // CONSTRUIR
+                // ----------------------------------
 
                 sala.edificios[numero] =
                     nivel + 1;
 
-                jugador.dinero -= costo;
+                jugador.dinero -=
+                    costo;
 
-            } else if (
+
+                console.log(
+                    `🏗️ ${jugador.nombre} construyó en ${casilla.nombre}. Nivel: ${nivel + 1}`
+                );
+
+            }
+
+
+            // ======================================
+            // VENDER
+            // ======================================
+
+            else if (
                 accion === 'vender'
             ) {
 
+                // ----------------------------------
+                // NO HAY EDIFICIOS
+                // ----------------------------------
+
                 if (
-                    nivel <= 0 ||
+                    nivel <= 0
+                ) {
+
+                    return callback?.({
+                        ok: false,
+                        mensaje:
+                            'Esta propiedad no tiene edificios para vender.'
+                    });
+                }
+
+
+                // ----------------------------------
+                // VENTA PAREJA
+                // ----------------------------------
+
+                if (
                     nivel !==
                     Math.max(...niveles)
                 ) {
@@ -2187,19 +2354,53 @@ function finalizarPartidaSiQuedaUnJugador(
                     return callback?.({
                         ok: false,
                         mensaje:
-                            'Primero vendé los edificios más altos del grupo.'
+                            'Primero vendé los edificios de mayor nivel del grupo.'
                     });
                 }
+
+
+                // ----------------------------------
+                // VENDER
+                // ----------------------------------
 
                 sala.edificios[numero] =
                     nivel - 1;
 
+                // Se devuelve el 50% del costo
+                // de construcción.
                 jugador.dinero +=
                     Math.floor(
                         costo / 2
                     );
 
-            } else {
+
+                console.log(
+                    `↩️ ${jugador.nombre} vendió un edificio de ${casilla.nombre}. Nivel: ${nivel - 1}`
+                );
+
+
+                // ----------------------------------
+                // LIMPIAR NIVEL 0
+                // ----------------------------------
+
+                if (
+                    sala.edificios[numero] <= 0
+                ) {
+
+                    delete sala.edificios[
+                        numero
+                    ];
+
+                }
+
+            }
+
+
+            // ======================================
+            // ACCIÓN INVÁLIDA
+            // ======================================
+
+            else {
 
                 return callback?.({
                     ok: false,
@@ -2208,15 +2409,26 @@ function finalizarPartidaSiQuedaUnJugador(
                 });
             }
 
+
+            // --------------------------------------
+            // ACTUALIZAR A TODOS LOS JUGADORES
+            // --------------------------------------
+
             emitirEstadoEconomico(
                 io,
-                datos.codigo.trim().toUpperCase(),
+                codigo,
                 sala
             );
 
+
             callback?.({
-                ok: true
+                ok: true,
+                nivel:
+                    sala.edificios[numero] || 0,
+                dinero:
+                    jugador.dinero
             });
+
         }
     );
 
@@ -2837,26 +3049,42 @@ function finalizarPartidaSiQuedaUnJugador(
             transferidas.forEach(
                 numero => {
 
+                    // ----------------------------------
+                    // ELIMINAR CASAS / HOTELES
+                    // ----------------------------------
+
+                    delete sala.edificios[numero];
+
+
+                    // ----------------------------------
+                    // TRANSFERIR PROPIEDAD AL ACREEDOR
+                    // ----------------------------------
+
                     if (acreedor) {
 
-                        sala.propiedades[
-                            numero
-                        ] = acreedor.id;
+                        sala.propiedades[numero] =
+                            acreedor.id;
 
                         acreedor.propiedades.push(
                             numero
                         );
 
-                    } else {
-
-                        delete sala.propiedades[
-                            numero
-                        ];
-
-                        delete sala.hipotecas[
-                            numero
-                        ];
                     }
+
+
+                    // ----------------------------------
+                    // SI NO HAY ACREEDOR,
+                    // LA PROPIEDAD VUELVE AL BANCO
+                    // ----------------------------------
+
+                    else {
+
+                        delete sala.propiedades[numero];
+
+                        delete sala.hipotecas[numero];
+
+                    }
+
                 }
             );
 

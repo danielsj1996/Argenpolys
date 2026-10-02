@@ -1887,3 +1887,549 @@ body {
         height: 65vh;
     }
 }
+/* =========================================================
+   EDIFICIOS DEL TABLERO — ARGENPOLYS
+   ========================================================= */
+
+/*
+   Estructura:
+
+   Nivel 1 → 🏠
+   Nivel 2 → 🏠 🏠
+   Nivel 3 → 🏠 🏠 🏠
+   Nivel 4 → 🏠 🏠 🏠 🏠
+   Nivel 5 → 🏨
+*/
+
+
+/* =========================================================
+   CONTENEDOR DE EDIFICIOS
+   ========================================================= */
+
+.edificios-casilla {
+
+    position: absolute;
+
+    /*
+       Dejamos espacio para las fichas
+       que están en la parte inferior.
+    */
+    left: 50%;
+
+    bottom: 19px;
+
+    transform: translateX(-50%);
+
+    width: 92%;
+
+    height: 24px;
+
+    display: flex;
+
+    align-items: flex-end;
+
+    justify-content: center;
+
+    gap: 1px;
+
+    pointer-events: none;
+
+    user-select: none;
+
+    z-index: 8;
+
+}
+
+
+/* =========================================================
+   IMÁGENES DE EDIFICIOS
+   ========================================================= */
+
+.edificio {
+
+    display: block;
+
+    object-fit: contain;
+
+    object-position: center bottom;
+
+    pointer-events: none;
+
+    user-select: none;
+
+    flex-shrink: 0;
+
+    /*
+       Sombra para que la pieza parezca
+       apoyada sobre el tablero.
+    */
+    filter:
+        drop-shadow(
+            1px 2px 2px rgba(0, 0, 0, 0.38)
+        );
+
+}
+
+
+/* =========================================================
+   CASA
+   ========================================================= */
+
+.edificio-casa {
+
+    width: 17px;
+
+    height: 20px;
+
+}
+
+
+/* =========================================================
+   HOTEL
+   ========================================================= */
+
+.edificio-hotel {
+
+    width: 30px;
+
+    height: 25px;
+
+}
+
+
+/* =========================================================
+   CASILLAS INFERIORES
+   ========================================================= */
+
+/*
+   Las casillas inferiores tienen:
+
+   número
+   contenido
+   nombre
+   edificios
+   fichas
+
+   Los edificios quedan sobre el nombre
+   y las fichas por encima de ellos.
+*/
+
+.casilla.lado-inferior .edificios-casilla {
+
+    bottom: 18px;
+
+    top: auto;
+
+    left: 50%;
+
+    transform: translateX(-50%);
+
+}
+
+
+/* =========================================================
+   CASILLAS SUPERIORES
+   ========================================================= */
+
+/*
+   En la parte superior invertimos la posición
+   para que los edificios no queden debajo
+   del número de casilla.
+*/
+
+.casilla.lado-superior .edificios-casilla {
+
+    top: 18px;
+
+    bottom: auto;
+
+    left: 50%;
+
+    transform: translateX(-50%);
+
+}
+
+
+/* =========================================================
+   CASILLAS DEL LADO DERECHO
+   ========================================================= */
+
+.casilla.lado-derecho .edificios-casilla {
+
+    top: 50%;
+
+    right: 18px;
+
+    left: auto;
+
+    bottom: auto;
+
+    width: 22px;
+
+    height: 76%;
+
+    transform: translateY(-50%);
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 1px;
+
+}
+
+
+/* =========================================================
+   CASILLAS DEL LADO IZQUIERDO
+   ========================================================= */
+
+.casilla.lado-izquierdo .edificios-casilla {
+
+    top: 50%;
+
+    left: 18px;
+
+    right: auto;
+
+    bottom: auto;
+
+    width: 22px;
+
+    height: 76%;
+
+    transform: translateY(-50%);
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 1px;
+
+}
+
+
+/* =========================================================
+   CASAS EN LATERALES
+   ========================================================= */
+
+.casilla.lado-derecho .edificio-casa,
+.casilla.lado-izquierdo .edificio-casa {
+
+    width: 15px;
+
+    height: 17px;
+
+}
+
+
+/* =========================================================
+   HOTELES EN LATERALES
+   ========================================================= */
+
+.casilla.lado-derecho .edificio-hotel,
+.casilla.lado-izquierdo .edificio-hotel {
+
+    width: 23px;
+
+    height: 24px;
+
+}
+
+
+/* =========================================================
+   HOTEL — UN POCO MÁS DESTACADO
+   ========================================================= */
+
+.edificio-hotel {
+
+    filter:
+        drop-shadow(
+            1px 2px 3px rgba(0, 0, 0, 0.45)
+        );
+
+}
+
+
+/* =========================================================
+   ANIMACIÓN AL APARECER
+   ========================================================= */
+
+.edificio {
+
+    animation:
+        aparecerEdificio
+        0.22s
+        ease-out;
+
+}
+
+
+@keyframes aparecerEdificio {
+
+    from {
+
+        opacity: 0;
+
+        transform:
+            translateY(4px)
+            scale(0.85);
+
+    }
+
+    to {
+
+        opacity: 1;
+
+        transform:
+            translateY(0)
+            scale(1);
+
+    }
+
+}
+
+
+/* =========================================================
+   FICHAS DE JUGADORES
+   ========================================================= */
+
+/*
+   Las fichas deben quedar por encima
+   de las casas y hoteles.
+*/
+
+.fichas-casilla {
+
+    z-index: 10;
+
+}
+
+
+/* =========================================================
+   PROPIETARIO
+   ========================================================= */
+
+/*
+   El indicador del propietario queda
+   por encima de todo.
+*/
+
+.propietario-badge {
+
+    z-index: 20;
+
+}
+
+
+/* =========================================================
+   MÓVIL
+   ========================================================= */
+
+@media (max-width: 768px) {
+
+    .edificios-casilla {
+
+        bottom: 16px;
+
+        height: 20px;
+
+        width: 94%;
+
+        gap: 1px;
+
+    }
+
+
+    .edificio-casa {
+
+        width: 13px;
+
+        height: 16px;
+
+    }
+
+
+    .edificio-hotel {
+
+        width: 24px;
+
+        height: 21px;
+
+    }
+
+
+    /* -----------------------------------------
+       SUPERIOR
+       ----------------------------------------- */
+
+    .casilla.lado-superior .edificios-casilla {
+
+        top: 16px;
+
+        bottom: auto;
+
+    }
+
+
+    /* -----------------------------------------
+       INFERIOR
+       ----------------------------------------- */
+
+    .casilla.lado-inferior .edificios-casilla {
+
+        bottom: 16px;
+
+        top: auto;
+
+    }
+
+
+    /* -----------------------------------------
+       DERECHO
+       ----------------------------------------- */
+
+    .casilla.lado-derecho .edificios-casilla {
+
+        right: 15px;
+
+        left: auto;
+
+        top: 50%;
+
+        bottom: auto;
+
+        width: 18px;
+
+        height: 72%;
+
+    }
+
+
+    /* -----------------------------------------
+       IZQUIERDO
+       ----------------------------------------- */
+
+    .casilla.lado-izquierdo .edificios-casilla {
+
+        left: 15px;
+
+        right: auto;
+
+        top: 50%;
+
+        bottom: auto;
+
+        width: 18px;
+
+        height: 72%;
+
+    }
+
+
+    .casilla.lado-derecho .edificio-casa,
+    .casilla.lado-izquierdo .edificio-casa {
+
+        width: 11px;
+
+        height: 14px;
+
+    }
+
+
+    .casilla.lado-derecho .edificio-hotel,
+    .casilla.lado-izquierdo .edificio-hotel {
+
+        width: 19px;
+
+        height: 20px;
+
+    }
+
+}
+
+
+/* =========================================================
+   MÓVIL MUY PEQUEÑO
+   ========================================================= */
+
+@media (max-width: 480px) {
+
+    .edificios-casilla {
+
+        bottom: 14px;
+
+        height: 18px;
+
+    }
+
+
+    .edificio-casa {
+
+        width: 11px;
+
+        height: 14px;
+
+    }
+
+
+    .edificio-hotel {
+
+        width: 21px;
+
+        height: 18px;
+
+    }
+
+
+    .casilla.lado-superior .edificios-casilla {
+
+        top: 14px;
+
+    }
+
+
+    .casilla.lado-inferior .edificios-casilla {
+
+        bottom: 14px;
+
+    }
+
+
+    .casilla.lado-derecho .edificios-casilla {
+
+        right: 13px;
+
+    }
+
+
+    .casilla.lado-izquierdo .edificios-casilla {
+
+        left: 13px;
+
+    }
+
+
+    .casilla.lado-derecho .edificio-casa,
+    .casilla.lado-izquierdo .edificio-casa {
+
+        width: 10px;
+
+        height: 12px;
+
+    }
+
+
+    .casilla.lado-derecho .edificio-hotel,
+    .casilla.lado-izquierdo .edificio-hotel {
+
+        width: 17px;
+
+        height: 18px;
+
+    }
+
+}

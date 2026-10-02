@@ -1,4 +1,3 @@
-
 // ==========================================
 // COLORES DE LAS FICHAS
 // ==========================================
@@ -15,6 +14,17 @@ const coloresJugadores = [
     '#6d4c41'
 
 ];
+
+
+// ==========================================
+// RUTAS DE EDIFICIOS
+// ==========================================
+
+const rutaCasa =
+    'img/edificios/casa.png';
+
+const rutaHotel =
+    'img/edificios/hotel.png';
 
 
 // ==========================================
@@ -89,16 +99,43 @@ function generarTablero() {
             <div class="color-casilla"></div>
 
             <div class="contenido-casilla">
+
                 <div class="ilustracion-casilla">
+
                     ${
                         casilla.imagen
-                            ? `<img src="${casilla.imagen}" alt="${casilla.nombre}" class="img-destino" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='inline';" /><span class="icono-casilla" style="display: none;">${casilla.icono}</span>`
-                            : `<span class="icono-casilla">${casilla.icono}</span>`
+                            ? `
+                                <img
+                                    src="${casilla.imagen}"
+                                    alt="${casilla.nombre}"
+                                    class="img-destino"
+                                    onerror="
+                                        this.style.display='none';
+                                        if(this.nextElementSibling)
+                                            this.nextElementSibling.style.display='inline';
+                                    "
+                                />
+
+                                <span
+                                    class="icono-casilla"
+                                    style="display: none;"
+                                >
+                                    ${casilla.icono}
+                                </span>
+                            `
+                            : `
+                                <span class="icono-casilla">
+                                    ${casilla.icono}
+                                </span>
+                            `
                     }
+
                 </div>
+
                 <span class="nombre-casilla">
                     ${casilla.nombre}
                 </span>
+
             </div>
 
             ${
@@ -111,17 +148,42 @@ function generarTablero() {
                     : ''
             }
 
-            <div class="propietario-badge" style="display: none;"></div>
+
+            <!-- PROPIETARIO -->
+
+            <div
+                class="propietario-badge"
+                style="display: none;"
+            ></div>
+
+
+            <!-- EDIFICIOS -->
+
+            ${
+                casilla.grupo
+                    ? `
+                        <div
+                            class="edificios-casilla"
+                            data-edificios="${casilla.numero}"
+                        ></div>
+                    `
+                    : ''
+            }
+
+
+            <!-- FICHAS -->
 
             <div class="fichas-casilla"></div>
 
         `;
+
 
         tablero.appendChild(
             elemento
         );
 
     });
+
 
     posicionarCasillas();
 
@@ -234,6 +296,154 @@ function posicionarCasillas() {
         }
 
     });
+
+}
+
+
+// ==========================================
+// ACTUALIZAR EDIFICIOS DEL TABLERO
+// ==========================================
+
+function actualizarEdificiosTablero(
+    edificios
+) {
+
+    if (!edificios) {
+        return;
+    }
+
+
+    document
+        .querySelectorAll(
+            '.edificios-casilla'
+        )
+        .forEach(contenedor => {
+
+            const numero =
+                Number(
+                    contenedor.dataset.edificios
+                );
+
+
+            const nivel =
+                Number(
+                    edificios[numero] || 0
+                );
+
+
+            // --------------------------------------
+            // LIMPIAR EDIFICIOS ANTERIORES
+            // --------------------------------------
+
+            contenedor.innerHTML = '';
+
+
+            // --------------------------------------
+            // SIN EDIFICIOS
+            // --------------------------------------
+
+            if (nivel <= 0) {
+                return;
+            }
+
+
+            // --------------------------------------
+            // HOTEL
+            // NIVEL 5
+            // --------------------------------------
+
+            if (nivel >= 5) {
+
+                const hotel =
+                    document.createElement('img');
+
+
+                hotel.src =
+                    rutaHotel;
+
+
+                hotel.alt =
+                    'Hotel';
+
+
+                hotel.classList.add(
+                    'edificio',
+                    'edificio-hotel'
+                );
+
+
+                hotel.onerror = function () {
+
+                    console.warn(
+                        'No se pudo cargar:',
+                        rutaHotel
+                    );
+
+                    this.style.display =
+                        'none';
+
+                };
+
+
+                contenedor.appendChild(
+                    hotel
+                );
+
+
+                return;
+
+            }
+
+
+            // --------------------------------------
+            // CASAS
+            // NIVELES 1 A 4
+            // --------------------------------------
+
+            for (
+                let i = 0;
+                i < nivel;
+                i++
+            ) {
+
+                const casa =
+                    document.createElement('img');
+
+
+                casa.src =
+                    rutaCasa;
+
+
+                casa.alt =
+                    'Casa';
+
+
+                casa.classList.add(
+                    'edificio',
+                    'edificio-casa'
+                );
+
+
+                casa.onerror = function () {
+
+                    console.warn(
+                        'No se pudo cargar:',
+                        rutaCasa
+                    );
+
+                    this.style.display =
+                        'none';
+
+                };
+
+
+                contenedor.appendChild(
+                    casa
+                );
+
+            }
+
+        });
 
 }
 
@@ -434,35 +644,119 @@ async function animarMovimiento(
 // ACTUALIZAR PROPIETARIOS EN EL TABLERO
 // ==========================================
 
-function actualizarPropietariosTablero(propiedades, jugadores) {
-    if (!propiedades || !jugadores) return;
+function actualizarPropietariosTablero(
+    propiedades,
+    jugadores
+) {
 
-    document.querySelectorAll('.casilla[data-numero]').forEach(casillaEl => {
-        const numero = Number(casillaEl.dataset.numero);
-        const propietarioId = propiedades[numero];
-        const badge = casillaEl.querySelector('.propietario-badge');
+    if (
+        !propiedades ||
+        !jugadores
+    ) {
+        return;
+    }
 
-        if (propietarioId) {
-            const jugadorIndice = jugadores.findIndex(j => j.id === propietarioId);
-            const jugador = jugadores[jugadorIndice];
-            const color = jugadorIndice !== -1 ? coloresJugadores[jugadorIndice % coloresJugadores.length] : '#1976d2';
 
-            if (badge) {
-                badge.style.display = 'block';
-                badge.style.backgroundColor = color;
-                badge.textContent = jugador ? (jugador.nombre.length > 8 ? jugador.nombre.slice(0, 7) + '…' : jugador.nombre) : 'Dueño';
-                badge.title = `Propietario: ${jugador?.nombre || 'Desconocido'}`;
+    document
+        .querySelectorAll(
+            '.casilla[data-numero]'
+        )
+        .forEach(casillaEl => {
+
+            const numero =
+                Number(
+                    casillaEl.dataset.numero
+                );
+
+
+            const propietarioId =
+                propiedades[numero];
+
+
+            const badge =
+                casillaEl.querySelector(
+                    '.propietario-badge'
+                );
+
+
+            if (propietarioId) {
+
+                const jugadorIndice =
+                    jugadores.findIndex(
+                        jugador =>
+                            jugador.id ===
+                            propietarioId
+                    );
+
+
+                const jugador =
+                    jugadores[jugadorIndice];
+
+
+                const color =
+                    jugadorIndice !== -1
+                        ? coloresJugadores[
+                            jugadorIndice %
+                            coloresJugadores.length
+                        ]
+                        : '#1976d2';
+
+
+                if (badge) {
+
+                    badge.style.display =
+                        'block';
+
+
+                    badge.style.backgroundColor =
+                        color;
+
+
+                    badge.textContent =
+                        jugador
+                            ? (
+                                jugador.nombre.length > 8
+                                    ? jugador.nombre.slice(0, 7) + '…'
+                                    : jugador.nombre
+                            )
+                            : 'Dueño';
+
+
+                    badge.title =
+                        `Propietario: ${
+                            jugador?.nombre ||
+                            'Desconocido'
+                        }`;
+
+                }
+
+
+                casillaEl.style.outline =
+                    `3px solid ${color}`;
+
+
+                casillaEl.style.outlineOffset =
+                    '-3px';
+
             }
 
-            casillaEl.style.outline = `3px solid ${color}`;
-            casillaEl.style.outlineOffset = '-3px';
-        } else {
-            if (badge) {
-                badge.style.display = 'none';
+            else {
+
+                if (badge) {
+
+                    badge.style.display =
+                        'none';
+
+                }
+
+
+                casillaEl.style.outline =
+                    'none';
+
             }
-            casillaEl.style.outline = 'none';
-        }
-    });
+
+        });
+
 }
 
 
@@ -494,16 +788,24 @@ function esperar(
 
 function iniciarTablero() {
 
-    // Reiniciar propietarios de las propiedades
+    // ------------------------------------------
+    // REINICIAR PROPIETARIOS
+    // ------------------------------------------
+
     casillas.forEach(casilla => {
 
         if (casilla.precio) {
-            casilla.propietarioId = null;
+
+            casilla.propietarioId =
+                null;
+
         }
 
     });
 
+
     generarTablero();
+
 
     console.log(
         'Tablero generado correctamente con 40 casillas.'
@@ -606,6 +908,7 @@ function mostrarDados(
 window.coloresJugadores =
     coloresJugadores;
 
+
 window.iniciarTablero =
     iniciarTablero;
 
@@ -626,10 +929,13 @@ window.actualizarPropietariosTablero =
     actualizarPropietariosTablero;
 
 
+window.actualizarEdificiosTablero =
+    actualizarEdificiosTablero;
+
+
 window.mostrarDados =
     mostrarDados;
 
 
 window.animarMovimiento =
     animarMovimiento;
-

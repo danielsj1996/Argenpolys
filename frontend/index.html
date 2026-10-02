@@ -10,7 +10,7 @@
     <title>Juego de Mesa Online</title>
 
     <link rel="stylesheet" href="css/style.css">
-
+    <link rel="icon" type="image/jpg" href="img/favicon.jpg">
 </head>
 
 
@@ -265,8 +265,8 @@
 
 
                 <div class="estado-partida"> <span> 🎲 Partida en curso </span>
-                     <button id="btnSalirPartida" class="btn salir-partida" type="button"> 
-                    🚪 Salir </button> 
+                    <button id="btnSalirPartida" class="btn salir-partida" type="button">
+                        🚪 Salir </button>
                 </div>
 
             </div>
@@ -517,7 +517,14 @@
 
     <script src="/socket.io/socket.io.js"></script>
 
-
+    <script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"
+  }
+}
+</script>
     <!-- ==========================================
          DATOS DEL TABLERO
     =========================================== -->
@@ -526,17 +533,23 @@
 
 
     <!-- ==========================================
-         LÓGICA DEL TABLERO
+    LÓGICA DEL TABLERO
     =========================================== -->
 
     <script src="js/game.js"></script>
 
 
     <!-- ==========================================
-         LÓGICA DE LA APLICACIÓN
+    LÓGICA DE LA APLICACIÓN
     =========================================== -->
 
     <script src="js/app.js"></script>
+
+    <!-- ==========================================
+        EDIFICIOS3D
+    =========================================== -->
+    <script type="module" src="js/edificios3d.js"></script>
+
 
 </body>
 
