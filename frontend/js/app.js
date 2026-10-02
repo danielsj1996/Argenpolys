@@ -3293,6 +3293,7 @@ socket.on(
         // -----------------------------------------
         // ACTUALIZAR ECONOMÍA DE LA SALA
         // -----------------------------------------
+        if (!salaActual) return;
 
         salaActual.propiedades =
             estado.propiedades;
@@ -3315,14 +3316,18 @@ socket.on(
             estado.jugadores;
 
 
+
         // -----------------------------------------
         // ACTUALIZAR PROPIETARIOS DEL TABLERO
         // -----------------------------------------
+
+
 
         window.actualizarPropietariosTablero?.(
             salaActual.propiedades,
             jugadoresPartida
         );
+
 
 
         // -----------------------------------------
@@ -3352,6 +3357,11 @@ socket.on(
         // ACTUALIZAR LISTA DE JUGADORES
         // -----------------------------------------
 
+        actualizarJugadoresPartida();
+
+
+        actualizarMisPropiedades();
+        actualizarDineroJugador();
         actualizarJugadoresPartida();
 
     }

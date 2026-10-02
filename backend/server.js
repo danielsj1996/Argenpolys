@@ -3084,7 +3084,6 @@ io.on('connection', (socket) => {
                         delete sala.hipotecas[numero];
 
                     }
-
                 }
             );
 
