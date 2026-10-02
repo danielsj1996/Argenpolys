@@ -368,6 +368,14 @@
                                 🤝 Intercambiar
                             </button>
 
+                            <button id="btnEstadisticas" class="btn secundario">
+                                📊 Estadísticas
+                            </button>
+
+                            <button id="btnLogros" class="btn secundario">
+                                🏆 Logros
+                            </button>
+
                             <button id="btnUsarTarjetaCarcel" class="btn secundario" style="display: none;">
                                 🎫 Usar salida de cárcel
                             </button>
@@ -479,6 +487,30 @@
         </div>
     </div>
 
+    <div id="modalEstadisticas" class="modal-carta oculto">
+        <div class="modal-carta-contenido gestion-contenido modal-estadisticas">
+            <h3 id="estadisticasTitulo">📊 Estadísticas de la partida</h3>
+            <div id="estadisticasContenido" class="estadisticas-grid"></div>
+            <button id="btnCerrarEstadisticas" class="btn secundario">Cerrar</button>
+        </div>
+    </div>
+
+    <div id="modalLogros" class="modal-carta oculto">
+        <div class="modal-carta-contenido gestion-contenido modal-logros">
+            <h3>🏆 Logros</h3>
+            <div id="logrosContenido" class="logros-grid"></div>
+            <button id="btnCerrarLogros" class="btn secundario">Cerrar</button>
+        </div>
+    </div>
+
+
+    <!-- ==========================================
+         CONTROLES GLOBALES
+    =========================================== -->
+
+    <button id="btnTemaOscuro" class="btn-tema" type="button" title="Cambiar tema">
+        🌙
+    </button>
 
     <!-- ==========================================
          CHAT EN VIVO
@@ -509,6 +541,11 @@
 
     </div>
 
+
+    <!-- ==========================================
+         TOAST NOTIFICATIONS
+    =========================================== -->
+    <div id="toastContainer" class="toast-container"></div>
 
     <!-- ==========================================
          SOCKET.IO

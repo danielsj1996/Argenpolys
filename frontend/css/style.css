@@ -2433,3 +2433,213 @@ body {
     }
 
 }
+
+/* ==========================================
+   TEMA OSCURO (DARK MODE)
+========================================== */
+:root {
+  --color-fondo: #e2e8f0;
+  --color-tarjeta: #ffffff;
+  --color-texto: #1e293b;
+  --color-borde: #cbd5e1;
+  --color-principal: #2563eb;
+  --color-acento: #1d4ed8;
+}
+
+body.tema-oscuro {
+  --color-fondo: #1a1a2e;
+  --color-tarjeta: #16213e;
+  --color-texto: #e2e8f0;
+  --color-borde: #334155;
+  background-color: var(--color-fondo);
+  color: var(--color-texto);
+}
+
+.btn-tema {
+  position: fixed;
+  top: 15px;
+  right: 15px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: var(--color-principal);
+  color: white;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s;
+}
+
+.btn-tema:hover {
+  background-color: var(--color-acento);
+}
+
+body, .tarjeta, .panel, .modal {
+  background-color: var(--color-fondo);
+  color: var(--color-texto);
+  border-color: var(--color-borde);
+  transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+}
+
+/* ==========================================
+   PANEL DE ESTADÍSTICAS
+========================================== */
+.modal-estadisticas {
+  background-color: var(--color-tarjeta);
+  border: 1px solid var(--color-borde);
+  padding: 20px;
+  border-radius: 8px;
+  color: var(--color-texto);
+}
+
+.cuadricula-estadisticas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.tarjeta-estadistica {
+  background-color: var(--color-fondo);
+  border: 1px solid var(--color-borde);
+  padding: 15px;
+  border-radius: 6px;
+  text-align: center;
+}
+
+.tarjeta-estadistica .valor {
+  font-size: 24px;
+  font-weight: bold;
+  color: var(--color-principal);
+  margin-top: 10px;
+}
+
+/* ==========================================
+   SISTEMA DE LOGROS
+========================================== */
+.contenedor-tostadas {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 1050;
+}
+
+.notificacion-logro {
+  background-color: var(--color-tarjeta);
+  color: var(--color-texto);
+  border-left: 5px solid var(--color-principal);
+  padding: 15px 20px;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  transform: translateX(120%);
+  animation: deslizarEntrada 0.4s forwards, deslizarSalida 0.4s forwards 4s;
+}
+
+@keyframes deslizarEntrada {
+  to { transform: translateX(0); }
+}
+
+@keyframes deslizarSalida {
+  to { transform: translateX(120%); }
+}
+
+.panel-logros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  padding: 15px 0;
+}
+
+.insignia-logro {
+  padding: 10px 15px;
+  border-radius: 20px;
+  font-weight: bold;
+  color: #fff;
+  text-align: center;
+  border: 2px solid rgba(0,0,0,0.2);
+  min-width: 100px;
+}
+
+.insignia-oro { background-color: #ffd700; color: #333; }
+.insignia-plata { background-color: #c0c0c0; color: #333; }
+.insignia-bronce { background-color: #cd7f32; }
+
+/* ==========================================
+   INDICADORES DE HIPOTECA
+========================================== */
+.propiedad-hipotecada {
+  position: relative;
+  opacity: 0.6;
+  text-decoration: line-through;
+  transition: opacity 0.3s, transform 0.3s;
+}
+
+.propiedad-hipotecada::after {
+  content: "HIPOTECADA";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-15deg);
+  background-color: #ef4444;
+  color: white;
+  padding: 4px 8px;
+  font-weight: bold;
+  font-size: 12px;
+  border-radius: 4px;
+  text-decoration: none;
+  z-index: 10;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  animation: estamparHipoteca 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes estamparHipoteca {
+  0% { transform: translate(-50%, -50%) rotate(-15deg) scale(3); opacity: 0; }
+  100% { transform: translate(-50%, -50%) rotate(-15deg) scale(1); opacity: 1; }
+}
+
+/* ==========================================
+   DISEÑO RESPONSIVO MEJORADO
+========================================== */
+@media (max-width: 768px) {
+  .contenedor-principal {
+    flex-direction: column;
+  }
+  
+  .tablero-juego {
+    width: 100%;
+    margin-bottom: 20px;
+  }
+  
+  .paneles-laterales {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  button, .btn {
+    padding: 12px 20px; /* Mejores objetivos táctiles (touch targets) */
+    font-size: 16px;
+  }
+  
+  .chat-widget {
+    height: 250px;
+    font-size: 14px;
+  }
+  
+  .btn-tema {
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+    top: 10px;
+    right: 10px;
+  }
+}
