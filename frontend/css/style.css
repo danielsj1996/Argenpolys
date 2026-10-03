@@ -92,7 +92,8 @@ body {
     letter-spacing: 0.5px;
 }
 
-.campo input {
+.campo input,
+.campo select {
     width: 100%;
     padding: 12px 16px;
     border: 1.5px solid #cbd5e1;
@@ -104,7 +105,8 @@ body {
     transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
 }
 
-.campo input:focus {
+.campo input:focus,
+.campo select:focus {
     border-color: #2563eb;
     background: #ffffff;
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
@@ -435,6 +437,10 @@ body {
     font-weight: 800;
 }
 
+.btn-salir-partida {
+    flex-shrink: 0;
+}
+
 
 /* =========================================================
    TABLERO Y GRILLA
@@ -453,6 +459,40 @@ body {
     border-radius: 14px;
     overflow: hidden;
     box-shadow: 0 12px 35px rgba(0, 0, 0, 0.22);
+}
+
+.cuenta-panel {
+    margin: 18px auto;
+    max-width: 520px;
+    text-align: left;
+}
+
+.cuenta-panel > summary {
+    cursor: pointer;
+    font-weight: 700;
+    padding: 10px 0;
+}
+
+.acciones-cuenta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 8px 0;
+}
+
+.lista-historial {
+    padding-left: 22px;
+}
+
+.lista-historial li {
+    margin: 8px 0;
+}
+
+.fichas3d-canvas {
+    position: absolute;
+    inset: 0;
+    z-index: 11;
+    pointer-events: none;
 }
 
 
@@ -1292,6 +1332,10 @@ body {
     transition: transform 0.2s ease;
 }
 
+.ficha-jugador.ficha-3d-activa {
+    visibility: hidden;
+}
+
 .ficha-jugador:hover {
     transform: scale(1.25);
     cursor: pointer;
@@ -1453,6 +1497,8 @@ body {
 
     .juego-header {
         margin-bottom: 8px;
+        flex-wrap: wrap;
+        gap: 8px;
     }
 
     .juego-header h1 {

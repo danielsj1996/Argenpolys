@@ -1,8 +1,17 @@
+require('dotenv').config();
+
 const express = require('express');
 const http = require('http');
 const path = require('path');
 const cors = require('cors');
+const crypto = require('crypto');
 const { Server } = require('socket.io');
+const {
+    autenticar,
+    guardarHistorialPartida,
+    obtenerHistorial,
+    obtenerConfiguracionPublica
+} = require('./src/persistence/supabase');
 
 const {
     crearSala,
@@ -15,8 +24,24 @@ const {
     reconectarJugador,
     eliminarJugadorPorToken,
     siguienteJugadorActivo,
-    agregarMensajeChat
+    agregarMensajeChat,
+    esTokenSeguro,
+    normalizarCodigoSala,
+    sanitizarJugador,
+    sanitizarSala
 } = require('./src/rooms/roomManager');
+const {
+    propiedad,
+    propiedadesDelGrupo,
+    tieneGrupoCompleto,
+    costoEdificio,
+    nivelEdificio,
+    rentaDePropiedad,
+    cobrarDeuda
+} = require('./src/game/economy');
+const { crearGestorTurnos } = require('./src/game/turnManager');
+const { registrarManejadorChat } = require('./src/socket/chatHandlers');
+const { registrarManejadoresDeuda } = require('./src/socket/debtHandlers');
 
 const casillas = require('../frontend/data/casillas');
 
@@ -33,111 +58,10 @@ const GRACIA_RECONEXION_EN_TURNO_MS = 30 * 1000;
 // Duración del temporizador de turno. Al agotarse, se pasa el turno solo.
 const DURACION_TURNO_MS = 60 * 1000;
 
-// codigo de sala -> { deadline, timeout }
-const temporizadoresTurno = {};
-
 // token de jugador -> timeout de eliminación por falta de reconexión
 const temporizadoresDesconexion = {};
 
 const MAX_LARGO_MENSAJE_CHAT = 300;
-
-
-// ==========================================
-// FUNCIONES AUXILIARES
-// ==========================================
-
-function propiedad(numero) {
-    return casillas.find(
-        casilla => casilla.numero === Number(numero)
-    );
-}
-
-function propiedadesDelGrupo(grupo) {
-    return grupo
-        ? casillas.filter(casilla => casilla.grupo === grupo)
-        : [];
-}
-
-function tieneGrupoCompleto(sala, jugadorId, grupo) {
-    const grupoCompleto = propiedadesDelGrupo(grupo);
-
-    return (
-        grupoCompleto.length > 0 &&
-        grupoCompleto.every(
-            casilla =>
-                sala.propiedades[casilla.numero] === jugadorId
-        )
-    );
-}
-
-function costoEdificio(casilla) {
-    return Math.round(casilla.precio / 2);
-}
-
-function nivelEdificio(sala, numero) {
-    return sala.edificios?.[numero] || 0;
-}
-
-function rentaDePropiedad(sala, casilla, dado) {
-
-    if (sala.hipotecas?.[casilla.numero]) {
-        return 0;
-    }
-
-    const duenoId =
-        sala.propiedades[casilla.numero];
-
-    if (casilla.categoria === 'ferrocarril') {
-
-        const cantidad =
-            [6, 16, 26, 36]
-                .filter(
-                    numero =>
-                        sala.propiedades[numero] === duenoId &&
-                        !sala.hipotecas?.[numero]
-                )
-                .length;
-
-        return [0, 500, 1000, 1500, 2000][cantidad] || 0;
-    }
-
-    if (casilla.servicio) {
-
-        const cantidad =
-            [14, 29]
-                .filter(
-                    numero =>
-                        sala.propiedades[numero] === duenoId &&
-                        !sala.hipotecas?.[numero]
-                )
-                .length;
-
-        return dado * (cantidad === 2 ? 100 : 40);
-    }
-
-    const nivel =
-        nivelEdificio(sala, casilla.numero);
-
-    if (nivel > 0) {
-        return (
-            (casilla.alquiler || 100) *
-            [1, 5, 15, 45, 80, 125][nivel]
-        );
-    }
-
-    return (
-        (casilla.alquiler || 100) *
-        (
-            tieneGrupoCompleto(
-                sala,
-                duenoId,
-                casilla.grupo
-            )
-                ? 2
-                : 1
-        )
-    );
-}
 
 
 function emitirEstadoEconomico(io, codigo, sala) {
@@ -148,9 +72,57 @@ function emitirEstadoEconomico(io, codigo, sala) {
             propiedades: sala.propiedades,
             edificios: sala.edificios,
             hipotecas: sala.hipotecas,
-            jugadores: sala.jugadores
+            jugadores: sala.jugadores.map(sanitizarJugador)
         }
     );
+}
+
+const allowedOrigins = [...new Set(
+    (process.env.ALLOWED_ORIGINS || '')
+        .split(',')
+        .map(origen => origen.trim())
+        .filter(Boolean)
+        .map(origen => {
+            let url;
+            try {
+                url = new URL(origen);
+            } catch {
+                throw new Error(`ALLOWED_ORIGINS contiene un origen inválido: ${origen}`);
+            }
+
+            if (
+                !['http:', 'https:'].includes(url.protocol) ||
+                url.pathname !== '/' ||
+                url.search ||
+                url.hash
+            ) {
+                throw new Error(`ALLOWED_ORIGINS debe contener solo orígenes HTTP(S): ${origen}`);
+            }
+
+            return url.origin;
+        })
+)];
+
+function origenPermitido(req) {
+    const origen = req.headers.origin;
+    if (!origen) return true;
+
+    if (allowedOrigins.includes(origen)) return true;
+
+    try {
+        const hostSolicitado = new URL(origen).host;
+        const hostsServidor = [
+            req.headers['x-forwarded-host'],
+            req.headers.host
+        ]
+            .filter(Boolean)
+            .flatMap(host => String(host).split(','))
+            .map(host => host.trim());
+
+        return hostsServidor.includes(hostSolicitado);
+    } catch {
+        return false;
+    }
 }
 
 
@@ -190,175 +162,6 @@ function enviarACarcel(
 
 
 // ==========================================
-// TEMPORIZADOR DE TURNO
-// ==========================================
-
-function limpiarTemporizadorTurno(codigo) {
-
-    const actual =
-        temporizadoresTurno[codigo];
-
-    if (actual) {
-
-        clearTimeout(actual.timeout);
-
-        delete temporizadoresTurno[codigo];
-    }
-}
-
-
-function iniciarTemporizadorTurno(
-    codigo,
-    duracionMs = DURACION_TURNO_MS
-) {
-
-    limpiarTemporizadorTurno(codigo);
-
-    const sala =
-        obtenerSala(codigo);
-
-    if (
-        !sala ||
-        sala.estado !== 'jugando' ||
-        !sala.turno
-    ) {
-        return;
-    }
-
-    const jugadorIdEsperado =
-        sala.turno;
-
-    const deadline =
-        Date.now() + duracionMs;
-
-    temporizadoresTurno[codigo] = {
-        deadline,
-
-        timeout: setTimeout(
-            () =>
-                manejarTiempoAgotado(
-                    codigo,
-                    jugadorIdEsperado
-                ),
-            duracionMs
-        )
-    };
-
-    io.to(codigo).emit(
-        'temporizador_turno',
-        {
-            jugadorId: jugadorIdEsperado,
-            deadline,
-            duracionMs
-        }
-    );
-}
-
-
-function manejarTiempoAgotado(
-    codigo,
-    jugadorIdEsperado
-) {
-
-    const sala =
-        obtenerSala(codigo);
-
-    if (
-        !sala ||
-        sala.estado !== 'jugando'
-    ) {
-        return;
-    }
-
-    // El turno ya cambió por otra vía.
-    if (
-        sala.turno !== jugadorIdEsperado
-    ) {
-        return;
-    }
-
-    // No forzamos el pase de turno en medio
-    // de una subasta.
-    if (sala.subasta) {
-
-        temporizadoresTurno[codigo] = {
-            deadline: Date.now() + 3000,
-
-            timeout: setTimeout(
-                () =>
-                    manejarTiempoAgotado(
-                        codigo,
-                        jugadorIdEsperado
-                    ),
-                3000
-            )
-        };
-
-        return;
-    }
-
-    const jugador =
-        sala.jugadores.find(
-            j => j.id === jugadorIdEsperado
-        );
-
-    if (!jugador) {
-        return;
-    }
-
-    io.to(codigo).emit(
-        'turno_agotado',
-        {
-            jugadorId: jugador.id,
-            jugadorNombre: jugador.nombre
-        }
-    );
-
-    agregarMensajeSistema(
-        codigo,
-        `⏱️ Se agotó el tiempo de ${jugador.nombre} y pasó el turno.`
-    );
-
-    const indiceActual =
-        sala.jugadores.findIndex(
-            j => j.id === jugadorIdEsperado
-        );
-
-    const siguienteIndice =
-        siguienteJugadorActivo(
-            sala,
-            (indiceActual + 1) %
-            sala.jugadores.length
-        );
-
-    if (siguienteIndice === -1) {
-        return;
-    }
-
-    const siguienteJugador =
-        sala.jugadores[siguienteIndice];
-
-    sala.turno =
-        siguienteJugador.id;
-
-    sala.haTiradoDados = false;
-    sala.doblePendiente = false;
-
-    io.to(codigo).emit(
-        'turno_actualizado',
-        {
-            jugadorId: siguienteJugador.id,
-            jugadorNombre: siguienteJugador.nombre,
-            turno: siguienteIndice,
-            porTiempoAgotado: true
-        }
-    );
-
-    iniciarTemporizadorTurno(codigo);
-}
-
-
-// ==========================================
 // CHAT
 // ==========================================
 
@@ -390,44 +193,6 @@ function agregarMensajeSistema(
 }
 
 
-function cobrarDeuda(
-    jugador,
-    monto,
-    acreedor = null
-) {
-
-    const pagado =
-        Math.min(
-            jugador.dinero,
-            monto
-        );
-
-    jugador.dinero -= pagado;
-
-    if (acreedor) {
-        acreedor.dinero += pagado;
-    }
-
-    const pendiente =
-        monto - pagado;
-
-    if (pendiente > 0) {
-
-        jugador.deudaPendiente =
-            (jugador.deudaPendiente || 0) +
-            pendiente;
-
-        jugador.acreedorId =
-            acreedor?.id || null;
-    }
-
-    return {
-        pagado,
-        pendiente
-    };
-}
-
-
 // ==========================================
 // CONFIGURACIÓN DEL SERVIDOR
 // ==========================================
@@ -440,19 +205,48 @@ const server =
 const io =
     new Server(server, {
         cors: {
-            origin: '*',
+            origin: allowedOrigins,
             methods: ['GET', 'POST']
+        },
+        allowRequest: (req, callback) => {
+            callback(null, origenPermitido(req));
         }
     });
+
+const gestorTurnos = crearGestorTurnos({
+    io,
+    obtenerSala,
+    siguienteJugadorActivo,
+    agregarMensajeSistema,
+    duracionTurnoMs: DURACION_TURNO_MS
+});
 
 
 // ==========================================
 // MIDDLEWARE
 // ==========================================
 
-app.use(cors());
+app.use(cors({ origin: allowedOrigins }));
 
 app.use(express.json());
+
+app.get('/api/config', (req, res) => {
+    res.json(obtenerConfiguracionPublica());
+});
+
+app.get('/api/historial', async (req, res) => {
+    try {
+        const accessToken = req.headers.authorization?.match(/^Bearer (.+)$/i)?.[1];
+        const resultado = await obtenerHistorial(accessToken);
+        if (resultado.error) {
+            return res.status(resultado.status || 503).json({ error: resultado.error });
+        }
+        return res.json(resultado);
+    } catch (error) {
+        console.error('Falló la consulta del historial:', error);
+        return res.status(500).json({ error: 'No se pudo cargar el historial.' });
+    }
+});
 
 
 // ==========================================
@@ -498,6 +292,21 @@ io.on('connection', (socket) => {
         socket.id
     );
 
+    registrarManejadorChat(socket, {
+        io,
+        obtenerSala,
+        normalizarCodigoSala,
+        agregarMensajeChat,
+        maxLargoMensaje: MAX_LARGO_MENSAJE_CHAT
+    });
+    registrarManejadoresDeuda(socket, {
+        io,
+        obtenerSala,
+        normalizarCodigoSala,
+        jugadorActivo,
+        nivelEdificio,
+        emitirEstadoEconomico
+    });
 
     // ======================================
     // CREAR SALA
@@ -505,48 +314,39 @@ io.on('connection', (socket) => {
 
     socket.on(
         'crear_sala',
-        (datos, callback) => {
+        async (datos, callback) => {
 
             try {
+                const autenticacion = await autenticar(datos?.accessToken);
+                if (autenticacion.error) {
+                    return callback?.({ ok: false, mensaje: autenticacion.error });
+                }
 
-                const nombre =
-                    datos?.nombre?.trim();
+                const resultado =
+                    crearSala(
+                        socket.id,
+                        datos?.nombre,
+                        datos?.token,
+                        datos?.fichaId,
+                        autenticacion.user?.id || null
+                    );
 
-                const token =
-                    typeof datos?.token === 'string' &&
-                        datos.token
-                        ? datos.token
-                        : `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-
-                if (!nombre) {
-
+                if (resultado.error) {
                     const respuesta = {
                         ok: false,
-                        mensaje:
-                            'Debes ingresar un nombre.'
+                        mensaje: resultado.error
                     };
 
-                    if (
-                        typeof callback ===
-                        'function'
-                    ) {
+                    if (typeof callback === 'function') {
                         callback(respuesta);
                     } else {
-                        socket.emit(
-                            'error_sala',
-                            respuesta
-                        );
+                        socket.emit('error_sala', respuesta);
                     }
 
                     return;
                 }
 
-                const sala =
-                    crearSala(
-                        socket.id,
-                        nombre,
-                        token
-                    );
+                const { sala, token } = resultado;
 
                 socket.join(
                     sala.codigo
@@ -559,7 +359,7 @@ io.on('connection', (socket) => {
 
                 const respuesta = {
                     ok: true,
-                    sala,
+                    sala: sanitizarSala(sala),
                     token
                 };
 
@@ -574,7 +374,7 @@ io.on('connection', (socket) => {
                     sala.codigo
                 ).emit(
                     'estado_sala',
-                    sala
+                    sanitizarSala(sala)
                 );
 
             } catch (error) {
@@ -612,17 +412,19 @@ io.on('connection', (socket) => {
 
     socket.on(
         'unirse_sala',
-        (datos, callback) => {
+        async (datos, callback) => {
 
             try {
+                const autenticacion = await autenticar(datos?.accessToken);
+                if (autenticacion.error) {
+                    return callback?.({ ok: false, mensaje: autenticacion.error });
+                }
 
                 const codigo =
-                    datos?.codigo
-                        ?.trim()
-                        .toUpperCase();
+                    normalizarCodigoSala(datos?.codigo);
 
                 const nombre =
-                    datos?.nombre?.trim();
+                    datos?.nombre;
 
                 if (!codigo) {
 
@@ -647,41 +449,14 @@ io.on('connection', (socket) => {
                     return;
                 }
 
-                if (!nombre) {
-
-                    const respuesta = {
-                        ok: false,
-                        mensaje:
-                            'Debes ingresar un nombre.'
-                    };
-
-                    if (
-                        typeof callback ===
-                        'function'
-                    ) {
-                        callback(respuesta);
-                    } else {
-                        socket.emit(
-                            'error_sala',
-                            respuesta
-                        );
-                    }
-
-                    return;
-                }
-
-                const token =
-                    typeof datos?.token === 'string' &&
-                        datos.token
-                        ? datos.token
-                        : `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-
                 const resultado =
                     agregarJugador(
                         codigo,
                         socket.id,
                         nombre,
-                        token
+                        datos?.token,
+                        datos?.fichaId,
+                        autenticacion.user?.id || null
                     );
 
                 if (resultado.error) {
@@ -707,8 +482,7 @@ io.on('connection', (socket) => {
                     return;
                 }
 
-                const sala =
-                    resultado.sala;
+                const { sala, token } = resultado;
 
                 socket.join(codigo);
 
@@ -718,7 +492,7 @@ io.on('connection', (socket) => {
 
                 const respuesta = {
                     ok: true,
-                    sala,
+                    sala: sanitizarSala(sala),
                     token
                 };
 
@@ -733,14 +507,14 @@ io.on('connection', (socket) => {
                     codigo
                 ).emit(
                     'estado_sala',
-                    sala
+                    sanitizarSala(sala)
                 );
 
                 io.to(
                     codigo
                 ).emit(
                     'sala_actualizada',
-                    sala
+                    sanitizarSala(sala)
                 );
 
                 agregarMensajeSistema(
@@ -788,9 +562,7 @@ io.on('connection', (socket) => {
             try {
 
                 const codigo =
-                    datos?.codigo
-                        ?.trim()
-                        .toUpperCase();
+                    normalizarCodigoSala(datos?.codigo);
 
                 if (!codigo) {
 
@@ -842,6 +614,14 @@ io.on('connection', (socket) => {
                 const sala =
                     resultado.sala;
 
+                sala.partidaId = crypto.randomUUID();
+                sala.iniciadaEn = Date.now();
+                sala.participantesIniciales = sala.jugadores.map(jugador => ({
+                    userId: jugador.authUserId || null,
+                    id: jugador.id,
+                    nombre: jugador.nombre
+                }));
+
                 console.log(
                     'Partida iniciada:',
                     codigo
@@ -854,7 +634,7 @@ io.on('connection', (socket) => {
 
                     callback({
                         ok: true,
-                        sala
+                        sala: sanitizarSala(sala)
                     });
                 }
 
@@ -862,14 +642,14 @@ io.on('connection', (socket) => {
                     codigo
                 ).emit(
                     'partida_iniciada',
-                    sala
+                    sanitizarSala(sala)
                 );
 
                 io.to(
                     codigo
                 ).emit(
                     'sala_actualizada',
-                    sala
+                    sanitizarSala(sala)
                 );
 
                 agregarMensajeSistema(
@@ -877,7 +657,7 @@ io.on('connection', (socket) => {
                     '🎲 ¡La partida comenzó!'
                 );
 
-                iniciarTemporizadorTurno(
+                gestorTurnos.iniciar(
                     codigo
                 );
 
@@ -1034,7 +814,7 @@ io.on('connection', (socket) => {
             {
                 jugadorId: socket.id,
                 nombre: nombreJugador,
-                jugadores: salaActualizada.jugadores,
+                jugadores: salaActualizada.jugadores.map(sanitizarJugador),
                 host: salaActualizada.host,
                 turno: salaActualizada.turno
             }
@@ -1047,7 +827,7 @@ io.on('connection', (socket) => {
 
         io.to(codigo).emit(
             'sala_actualizada',
-            salaActualizada
+            sanitizarSala(salaActualizada)
         );
 
 
@@ -1061,7 +841,7 @@ io.on('connection', (socket) => {
                 propiedades: salaActualizada.propiedades,
                 edificios: salaActualizada.edificios,
                 hipotecas: salaActualizada.hipotecas,
-                jugadores: salaActualizada.jugadores
+                jugadores: salaActualizada.jugadores.map(sanitizarJugador)
             }
         );
 
@@ -1101,7 +881,7 @@ io.on('connection', (socket) => {
         }
 
         // Detener el temporizador del turno.
-        limpiarTemporizadorTurno(codigo);
+        gestorTurnos.limpiar(codigo);
 
         // Cancelar cualquier subasta pendiente.
         if (sala.subasta?.timer) {
@@ -1119,6 +899,23 @@ io.on('connection', (socket) => {
             nombre: ganador.nombre
         };
 
+        if (sala.partidaId && Array.isArray(sala.participantesIniciales)) {
+            void guardarHistorialPartida({
+                id: sala.partidaId,
+                codigo,
+                ganador: ganador.nombre,
+                ganadorId: ganador.id,
+                motivo,
+                iniciadaEn: sala.iniciadaEn,
+                finalizadaEn: Date.now(),
+                duracionSegundos: Math.max(
+                    0,
+                    Math.floor((Date.now() - sala.iniciadaEn) / 1000)
+                ),
+                participantes: sala.participantesIniciales
+            });
+        }
+
         console.log(
             `🏆 ${ganador.nombre} ganó la partida ${codigo}. Motivo: ${motivo}`
         );
@@ -1126,14 +923,14 @@ io.on('connection', (socket) => {
         // Actualizar el estado de la sala para los jugadores restantes.
         io.to(codigo).emit(
             'sala_actualizada',
-            sala
+            sanitizarSala(sala)
         );
 
         // Actualizar estado económico.
         emitirEstadoEconomico(
             io,
             codigo,
-            sala
+            sanitizarSala(sala)
         );
 
         // Avisar que la partida terminó.
@@ -1145,7 +942,7 @@ io.on('connection', (socket) => {
                     id: ganador.id,
                     nombre: ganador.nombre
                 },
-                sala
+                sala: sanitizarSala(sala)
             }
         );
 
@@ -1162,9 +959,7 @@ io.on('connection', (socket) => {
             try {
 
                 const codigo =
-                    datos?.codigo
-                        ?.trim()
-                        .toUpperCase();
+                    normalizarCodigoSala(datos?.codigo);
 
                 if (!codigo) return;
 
@@ -1780,7 +1575,9 @@ io.on('connection', (socket) => {
                             jugadorNombre:
                                 jugador.nombre,
                             monto:
-                                jugador.deudaPendiente
+                                jugador.deudaPendiente,
+                            acreedorId:
+                                jugador.acreedorId
                         }
                     );
                 }
@@ -1930,9 +1727,7 @@ io.on('connection', (socket) => {
         (datos, callback) => {
 
             const codigo =
-                datos?.codigo
-                    ?.trim()
-                    .toUpperCase();
+                normalizarCodigoSala(datos?.codigo);
 
             const sala =
                 obtenerSala(codigo);
@@ -2018,9 +1813,7 @@ io.on('connection', (socket) => {
         (datos, callback) => {
 
             const codigo =
-                datos?.codigo
-                    ?.trim()
-                    .toUpperCase();
+                normalizarCodigoSala(datos?.codigo);
 
             const sala =
                 obtenerSala(codigo);
@@ -2087,9 +1880,7 @@ io.on('connection', (socket) => {
         (datos, callback) => {
 
             const codigo =
-                datos?.codigo
-                    ?.trim()
-                    .toUpperCase();
+                normalizarCodigoSala(datos?.codigo);
 
             const sala =
                 obtenerSala(codigo);
@@ -2438,9 +2229,7 @@ io.on('connection', (socket) => {
         (datos, callback) => {
 
             const codigo =
-                datos?.codigo
-                    ?.trim()
-                    .toUpperCase();
+                normalizarCodigoSala(datos?.codigo);
 
             const sala =
                 obtenerSala(codigo);
@@ -2535,9 +2324,7 @@ io.on('connection', (socket) => {
         (datos, callback) => {
 
             const codigo =
-                datos?.codigo
-                    ?.trim()
-                    .toUpperCase();
+                normalizarCodigoSala(datos?.codigo);
 
             const sala =
                 obtenerSala(codigo);
@@ -2674,9 +2461,7 @@ io.on('connection', (socket) => {
         (datos, callback) => {
 
             const codigo =
-                datos?.codigo
-                    ?.trim()
-                    .toUpperCase();
+                normalizarCodigoSala(datos?.codigo);
 
             const sala =
                 obtenerSala(codigo);
@@ -2841,9 +2626,7 @@ io.on('connection', (socket) => {
         (datos, callback) => {
 
             const codigo =
-                datos?.codigo
-                    ?.trim()
-                    .toUpperCase();
+                normalizarCodigoSala(datos?.codigo);
 
             const sala =
                 obtenerSala(codigo);
@@ -2904,222 +2687,6 @@ io.on('connection', (socket) => {
     );
 
 
-    socket.on(
-        'pagar_deuda',
-        (datos, callback) => {
-
-            const codigo =
-                datos?.codigo
-                    ?.trim()
-                    .toUpperCase();
-
-            const sala =
-                obtenerSala(codigo);
-
-            const jugador =
-                jugadorActivo(
-                    sala,
-                    socket.id
-                );
-
-            if (
-                !jugador ||
-                !jugador.deudaPendiente
-            ) {
-
-                return callback?.({
-                    ok: false,
-                    mensaje:
-                        'No tenés una deuda pendiente.'
-                });
-            }
-
-            const monto =
-                Math.min(
-                    jugador.dinero,
-                    jugador.deudaPendiente
-                );
-
-            if (!monto) {
-
-                return callback?.({
-                    ok: false,
-                    mensaje:
-                        'No tenés efectivo para pagar la deuda.'
-                });
-            }
-
-            const acreedor =
-                sala.jugadores.find(
-                    j =>
-                        j.id ===
-                        jugador.acreedorId &&
-                        !j.enBancarrota
-                );
-
-            jugador.dinero -= monto;
-
-            if (acreedor) {
-                acreedor.dinero += monto;
-            }
-
-            jugador.deudaPendiente -=
-                monto;
-
-            if (
-                !jugador.deudaPendiente
-            ) {
-                jugador.acreedorId = null;
-            }
-
-            emitirEstadoEconomico(
-                io,
-                codigo,
-                sala
-            );
-
-            callback?.({
-                ok: true,
-                monto,
-                restante:
-                    jugador.deudaPendiente
-            });
-        }
-    );
-
-
-    socket.on(
-        'declarar_bancarrota',
-        (datos, callback) => {
-
-            const codigo =
-                datos?.codigo
-                    ?.trim()
-                    .toUpperCase();
-
-            const sala =
-                obtenerSala(codigo);
-
-            const jugador =
-                jugadorActivo(
-                    sala,
-                    socket.id
-                );
-
-            if (
-                !jugador ||
-                !jugador.deudaPendiente
-            ) {
-
-                return callback?.({
-                    ok: false,
-                    mensaje:
-                        'Solo podés declararte en bancarrota con una deuda pendiente.'
-                });
-            }
-
-            if (
-                jugador.propiedades.some(
-                    numero =>
-                        nivelEdificio(
-                            sala,
-                            numero
-                        ) > 0
-                )
-            ) {
-
-                return callback?.({
-                    ok: false,
-                    mensaje:
-                        'Primero vendé todos tus edificios antes de declararte en bancarrota.'
-                });
-            }
-
-            const acreedor =
-                sala.jugadores.find(
-                    j =>
-                        j.id ===
-                        jugador.acreedorId &&
-                        !j.enBancarrota
-                );
-
-            const transferidas =
-                [...jugador.propiedades];
-
-            transferidas.forEach(
-                numero => {
-
-                    // ----------------------------------
-                    // ELIMINAR CASAS / HOTELES
-                    // ----------------------------------
-
-                    delete sala.edificios[numero];
-
-
-                    // ----------------------------------
-                    // TRANSFERIR PROPIEDAD AL ACREEDOR
-                    // ----------------------------------
-
-                    if (acreedor) {
-
-                        sala.propiedades[numero] =
-                            acreedor.id;
-
-                        acreedor.propiedades.push(
-                            numero
-                        );
-
-                    }
-
-
-                    // ----------------------------------
-                    // SI NO HAY ACREEDOR,
-                    // LA PROPIEDAD VUELVE AL BANCO
-                    // ----------------------------------
-
-                    else {
-
-                        delete sala.propiedades[numero];
-
-                        delete sala.hipotecas[numero];
-
-                    }
-                }
-            );
-
-            jugador.propiedades = [];
-            jugador.dinero = 0;
-            jugador.enBancarrota = true;
-            jugador.deudaPendiente = 0;
-            jugador.acreedorId = null;
-
-            io.to(codigo).emit(
-                'jugador_bancarrota',
-                {
-                    jugadorId:
-                        jugador.id,
-                    jugadorNombre:
-                        jugador.nombre,
-                    acreedorNombre:
-                        acreedor?.nombre,
-                    propiedadesTransferidas:
-                        transferidas.length
-                }
-            );
-
-            emitirEstadoEconomico(
-                io,
-                codigo,
-                sala
-            );
-
-            callback?.({
-                ok: true
-            });
-        }
-    );
-
-
     // ======================================
     // COMPRAR PROPIEDAD
     // ======================================
@@ -3131,9 +2698,7 @@ io.on('connection', (socket) => {
             try {
 
                 const codigo =
-                    datos?.codigo
-                        ?.trim()
-                        .toUpperCase();
+                    normalizarCodigoSala(datos?.codigo);
 
                 const numeroCasilla =
                     Number(
@@ -3390,9 +2955,7 @@ io.on('connection', (socket) => {
             try {
 
                 const codigo =
-                    datos?.codigo
-                        ?.trim()
-                        .toUpperCase();
+                    normalizarCodigoSala(datos?.codigo);
 
                 if (!codigo) return;
 
@@ -3492,7 +3055,7 @@ io.on('connection', (socket) => {
                         }
                     );
 
-                    iniciarTemporizadorTurno(
+                    gestorTurnos.iniciar(
                         codigo
                     );
 
@@ -3554,7 +3117,7 @@ io.on('connection', (socket) => {
                     }
                 );
 
-                iniciarTemporizadorTurno(
+                gestorTurnos.iniciar(
                     codigo
                 );
 
@@ -3604,9 +3167,7 @@ io.on('connection', (socket) => {
             try {
 
                 const codigo =
-                    datos?.codigo
-                        ?.trim()
-                        .toUpperCase();
+                    normalizarCodigoSala(datos?.codigo);
 
                 if (!codigo) return;
 
@@ -3747,115 +3308,6 @@ io.on('connection', (socket) => {
 
 
     // ======================================
-    // CHAT EN VIVO
-    // ======================================
-
-    socket.on(
-        'chat_enviar',
-        (datos, callback) => {
-
-            try {
-
-                const codigo =
-                    datos?.codigo
-                        ?.trim()
-                        .toUpperCase();
-
-                const sala =
-                    codigo &&
-                    obtenerSala(codigo);
-
-                if (!sala) {
-
-                    return callback?.({
-                        ok: false,
-                        mensaje:
-                            'La sala no existe.'
-                    });
-                }
-
-                const jugador =
-                    sala.jugadores.find(
-                        j =>
-                            j.id === socket.id
-                    );
-
-                if (!jugador) {
-
-                    return callback?.({
-                        ok: false,
-                        mensaje:
-                            'No pertenecés a esta sala.'
-                    });
-                }
-
-                const texto =
-                    String(
-                        datos?.texto || ''
-                    )
-                        .trim()
-                        .slice(
-                            0,
-                            MAX_LARGO_MENSAJE_CHAT
-                        );
-
-                if (!texto) {
-
-                    return callback?.({
-                        ok: false,
-                        mensaje:
-                            'Escribí algo para enviar.'
-                    });
-                }
-
-                const mensaje = {
-                    id:
-                        `${Date.now()}-${socket.id}`,
-
-                    jugadorId:
-                        jugador.id,
-
-                    jugadorNombre:
-                        jugador.nombre,
-
-                    texto,
-
-                    hora:
-                        Date.now()
-                };
-
-                agregarMensajeChat(
-                    codigo,
-                    mensaje
-                );
-
-                io.to(codigo).emit(
-                    'chat_mensaje',
-                    mensaje
-                );
-
-                callback?.({
-                    ok: true
-                });
-
-            } catch (error) {
-
-                console.error(
-                    'Error al enviar mensaje de chat:',
-                    error
-                );
-
-                callback?.({
-                    ok: false,
-                    mensaje:
-                        'No se pudo enviar el mensaje.'
-                });
-            }
-        }
-    );
-
-
-    // ======================================
     // RECONEXIÓN
     // ======================================
 
@@ -3866,16 +3318,14 @@ io.on('connection', (socket) => {
             try {
 
                 const codigo =
-                    datos?.codigo
-                        ?.trim()
-                        .toUpperCase();
+                    normalizarCodigoSala(datos?.codigo);
 
                 const token =
                     datos?.token;
 
                 if (
                     !codigo ||
-                    !token
+                    !esTokenSeguro(token)
                 ) {
 
                     return callback?.({
@@ -3931,7 +3381,7 @@ io.on('connection', (socket) => {
 
                 callback?.({
                     ok: true,
-                    sala,
+                    sala: sanitizarSala(sala),
                     jugadorId:
                         jugador.id,
                     token,
@@ -3940,9 +3390,7 @@ io.on('connection', (socket) => {
                 });
 
                 const temporizadorActivo =
-                    temporizadoresTurno[
-                    codigo
-                    ];
+                    gestorTurnos.obtener(codigo);
 
                 if (temporizadorActivo) {
 
@@ -3969,7 +3417,7 @@ io.on('connection', (socket) => {
 
                 io.to(codigo).emit(
                     'sala_actualizada',
-                    sala
+                    sanitizarSala(sala)
                 );
 
                 io.to(codigo).emit(
@@ -3982,7 +3430,7 @@ io.on('connection', (socket) => {
                         hipotecas:
                             sala.hipotecas,
                         jugadores:
-                            sala.jugadores
+                            sala.jugadores.map(sanitizarJugador)
                     }
                 );
 
@@ -4053,14 +3501,14 @@ io.on('connection', (socket) => {
                     sala.codigo
                 ).emit(
                     'sala_actualizada',
-                    sala
+                    sanitizarSala(sala)
                 );
 
                 io.to(
                     sala.codigo
                 ).emit(
                     'estado_sala',
-                    sala
+                    sanitizarSala(sala)
                 );
 
                 return;
@@ -4110,7 +3558,7 @@ io.on('connection', (socket) => {
 
             io.to(codigo).emit(
                 'sala_actualizada',
-                salaOrigen
+                sanitizarSala(salaOrigen)
             );
 
             agregarMensajeSistema(
@@ -4120,7 +3568,7 @@ io.on('connection', (socket) => {
 
             if (eraSuTurno) {
 
-                iniciarTemporizadorTurno(
+                gestorTurnos.iniciar(
                     codigo,
                     graciaMs
                 );
@@ -4159,7 +3607,7 @@ io.on('connection', (socket) => {
 
                     if (!salaFinal) {
 
-                        limpiarTemporizadorTurno(
+                        gestorTurnos.limpiar(
                             codigo
                         );
 
@@ -4216,7 +3664,7 @@ io.on('connection', (socket) => {
                         salaFinal.codigo
                     ).emit(
                         'sala_actualizada',
-                        salaFinal
+                        sanitizarSala(salaFinal)
                     );
 
 
@@ -4224,7 +3672,7 @@ io.on('connection', (socket) => {
                         salaFinal.codigo
                     ).emit(
                         'estado_sala',
-                        salaFinal
+                        sanitizarSala(salaFinal)
                     );
 
 
@@ -4268,7 +3716,7 @@ io.on('connection', (socket) => {
                             }
                         );
 
-                        iniciarTemporizadorTurno(
+                        gestorTurnos.iniciar(
                             salaFinal.codigo
                         );
                     }

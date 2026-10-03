@@ -19,12 +19,33 @@ const btnVolverInicioUnirse = document.getElementById('btnVolverInicioUnirse');
 
 // Crear Partida
 const nombreCrear = document.getElementById('nombreCrear');
+const fichaCrear = document.getElementById('fichaCrear');
 const btnCrearSala = document.getElementById('btnCrearSala');
 const mensajeCrear = document.getElementById('mensajeCrear');
 
 // Unirse a Partida
 const codigoSala = document.getElementById('codigoSala');
 const nombreUnirse = document.getElementById('nombreUnirse');
+const fichaUnirse = document.getElementById('fichaUnirse');
+const CLAVE_FICHA_3D = 'argenpoly_ficha_3d';
+
+function recuperarFicha3D() {
+    const guardada = localStorage.getItem(CLAVE_FICHA_3D);
+    return ['caballo', 'computador', 'churros'].includes(guardada)
+        ? guardada
+        : 'caballo';
+}
+
+[fichaCrear, fichaUnirse].forEach(selector => {
+    if (!selector) return;
+    selector.value = recuperarFicha3D();
+    selector.addEventListener('change', () => {
+        localStorage.setItem(CLAVE_FICHA_3D, selector.value);
+        [fichaCrear, fichaUnirse].forEach(otro => {
+            if (otro) otro.value = selector.value;
+        });
+    });
+});
 const btnUnirseSala = document.getElementById('btnUnirseSala');
 const mensajeUnirse = document.getElementById('mensajeUnirse');
 
@@ -109,15 +130,51 @@ const CLAVE_SESION = 'argenpoly_sesion';
 function obtenerToken() {
     let token = localStorage.getItem(CLAVE_TOKEN);
 
-    if (!token) {
-        token = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+    if (!tokenSeguro(token)) {
+        if (window.crypto.randomUUID) {
+            token = window.crypto.randomUUID();
+        } else {
+            const bytes = new Uint8Array(24);
+            window.crypto.getRandomValues(bytes);
+            token = Array.from(
+                bytes,
+                byte => byte.toString(16).padStart(2, '0')
+            ).join('');
+        }
+
         localStorage.setItem(CLAVE_TOKEN, token);
     }
 
     return token;
 }
 
-const miToken = obtenerToken();
+function tokenSeguro(token) {
+    return typeof token === 'string' &&
+        (/^[a-f0-9]{48}$/i.test(token) ||
+            /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(token));
+}
+
+function guardarTokenPrivado(token) {
+    if (!tokenSeguro(token)) {
+        console.error('El servidor respondió con un token de sesión inválido.');
+        return;
+    }
+
+    miToken = token;
+    localStorage.setItem(CLAVE_TOKEN, token);
+}
+
+let miToken = obtenerToken();
+
+function escaparHTML(valor) {
+    return String(valor ?? '').replace(/[&<>"']/g, caracter => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+    })[caracter]);
+}
 
 function guardarSesion(codigo, nombre) {
     try {
@@ -239,6 +296,7 @@ function intentarReconectar() {
                 return;
             }
 
+            guardarTokenPrivado(respuesta.token);
             salaActual = respuesta.sala;
 
             guardarSesion(
@@ -246,7 +304,17 @@ function intentarReconectar() {
                 sesion.nombre
             );
 
-            if (salaActual.estado === 'jugando') {
+            if (salaActual.estado === 'finalizada' && salaActual.ganador) {
+                cargarChat(
+                    respuesta.chat ||
+                    salaActual.chat ||
+                    []
+                );
+                mostrarResultadoFinal(
+                    salaActual.ganador.id === socket.id,
+                    salaActual.ganador.nombre
+                );
+            } else if (salaActual.estado === 'jugando') {
 
                 jugadoresPartida = salaActual.jugadores;
                 jugadorTurnoId = salaActual.turno;
@@ -294,11 +362,13 @@ function intentarReconectar() {
                 mostrarPantalla(pantallaSala);
             }
 
-            cargarChat(
-                respuesta.chat ||
-                salaActual.chat ||
-                []
-            );
+            if (salaActual.estado !== 'finalizada') {
+                cargarChat(
+                    respuesta.chat ||
+                    salaActual.chat ||
+                    []
+                );
+            }
 
             mostrarBannerConexion(
                 '✅ ¡Reconectado!',
@@ -885,21 +955,26 @@ function actualizarListaJugadores(jugadores) {
                     class="punto-color"
                     style="background-color: ${color}; width: 12px; height: 12px; border-radius: 50%; display: inline-block; margin-right: 8px;"
                 ></span>
-
-                <strong>
-                    ${indice + 1}. ${jugador.nombre}
-                </strong>
-
-                ${esTuUsuario
-                    ? '<span class="badge-tu">(Vos)</span>'
-                    : ''
-                }
-
-                ${esHost
-                    ? '<span class="badge-host">👑 Anfitrión</span>'
-                    : ''
-                }
             `;
+
+            const nombreJugador = document.createElement('strong');
+            nombreJugador.textContent =
+                `${indice + 1}. ${jugador.nombre}`;
+            li.appendChild(nombreJugador);
+
+            if (esTuUsuario) {
+                const badge = document.createElement('span');
+                badge.className = 'badge-tu';
+                badge.textContent = '(Vos)';
+                li.appendChild(badge);
+            }
+
+            if (esHost) {
+                const badge = document.createElement('span');
+                badge.className = 'badge-host';
+                badge.textContent = '👑 Anfitrión';
+                li.appendChild(badge);
+            }
 
             listaJugadores.appendChild(li);
         }
@@ -1033,7 +1108,7 @@ if (btnCrearSala) {
 
     btnCrearSala.addEventListener(
         'click',
-        () => {
+        async () => {
 
             const nombre =
                 nombreCrear.value.trim();
@@ -1050,12 +1125,22 @@ if (btnCrearSala) {
 
             mensajeCrear.textContent =
                 'Creando partida...';
+            let accessToken;
+            try {
+                accessToken = await window.argenAuth?.getAccessToken();
+            } catch (error) {
+                console.error('No se pudo recuperar la sesión de la cuenta:', error);
+                mensajeCrear.textContent = 'No se pudo validar la cuenta. Probá de nuevo.';
+                return;
+            }
 
             socket.emit(
                 'crear_sala',
                 {
                     nombre,
-                    token: miToken
+                    token: miToken,
+                    fichaId: fichaCrear.value,
+                    accessToken
                 },
                 respuesta => {
 
@@ -1071,6 +1156,7 @@ if (btnCrearSala) {
                         return;
                     }
 
+                    guardarTokenPrivado(respuesta.token);
                     actualizarSala(
                         respuesta.sala
                     );
@@ -1104,7 +1190,7 @@ if (btnUnirseSala) {
 
     btnUnirseSala.addEventListener(
         'click',
-        () => {
+        async () => {
 
             const nombre =
                 nombreUnirse.value.trim();
@@ -1136,13 +1222,23 @@ if (btnUnirseSala) {
 
             mensajeUnirse.textContent =
                 'Uniéndote a la partida...';
+            let accessToken;
+            try {
+                accessToken = await window.argenAuth?.getAccessToken();
+            } catch (error) {
+                console.error('No se pudo recuperar la sesión de la cuenta:', error);
+                mensajeUnirse.textContent = 'No se pudo validar la cuenta. Probá de nuevo.';
+                return;
+            }
 
             socket.emit(
                 'unirse_sala',
                 {
                     codigo,
                     nombre,
-                    token: miToken
+                    token: miToken,
+                    fichaId: fichaUnirse.value,
+                    accessToken
                 },
                 respuesta => {
 
@@ -1158,6 +1254,7 @@ if (btnUnirseSala) {
                         return;
                     }
 
+                    guardarTokenPrivado(respuesta.token);
                     actualizarSala(
                         respuesta.sala
                     );
@@ -1436,10 +1533,7 @@ function actualizarJugadoresPartida() {
                         ${indice + 1}
                     </span>
 
-                    <span class="jugador-fila-nombre">
-                        ${jugador.nombre}
-                        ${esYo ? '<strong>(Vos)</strong>' : ''}
-                    </span>
+                    <span class="jugador-fila-nombre"></span>
 
                     ${esTurno
                     ? '<span class="badge-turno">Turno</span>'
@@ -1479,6 +1573,16 @@ function actualizarJugadoresPartida() {
 
                 </div>
             `;
+
+            const nombreJugador =
+                item.querySelector('.jugador-fila-nombre');
+            nombreJugador.textContent = jugador.nombre;
+
+            if (esYo) {
+                const badgeVos = document.createElement('strong');
+                badgeVos.textContent = '(Vos)';
+                nombreJugador.append(' ', badgeVos);
+            }
 
             listaJugadoresPartida.appendChild(
                 item
@@ -1888,6 +1992,56 @@ if (btnPagarFianza) {
     );
 }
 
+if (btnPagarDeuda) {
+    btnPagarDeuda.addEventListener('click', () => {
+        if (!salaActual || btnPagarDeuda.disabled) return;
+
+        btnPagarDeuda.disabled = true;
+        socket.emit(
+            'pagar_deuda',
+            { codigo: salaActual.codigo },
+            respuesta => {
+                btnPagarDeuda.disabled = false;
+
+                if (!respuesta?.ok) {
+                    mensajeDados.textContent =
+                        `⚠️ ${respuesta?.mensaje || 'No se pudo pagar la deuda.'}`;
+                    return;
+                }
+
+                mensajeDados.textContent = respuesta.restante
+                    ? `Pagaste $${respuesta.monto.toLocaleString('es-AR')}. Restan $${respuesta.restante.toLocaleString('es-AR')}.`
+                    : `✅ Pagaste $${respuesta.monto.toLocaleString('es-AR')} y saldaste tu deuda.`;
+            }
+        );
+    });
+}
+
+if (btnDeclararBancarrota) {
+    btnDeclararBancarrota.addEventListener('click', () => {
+        if (!salaActual || btnDeclararBancarrota.disabled) return;
+
+        const confirmar = window.confirm(
+            '¿Querés declararte en bancarrota? Perderás tu dinero y propiedades.'
+        );
+        if (!confirmar) return;
+
+        btnDeclararBancarrota.disabled = true;
+        socket.emit(
+            'declarar_bancarrota',
+            { codigo: salaActual.codigo },
+            respuesta => {
+                btnDeclararBancarrota.disabled = false;
+
+                if (!respuesta?.ok) {
+                    mensajeDados.textContent =
+                        `⚠️ ${respuesta?.mensaje || 'No se pudo declarar la bancarrota.'}`;
+                }
+            }
+        );
+    });
+}
+
 
 // ==========================================
 // COMPRAR PROPIEDAD
@@ -2147,7 +2301,7 @@ socket.on(
         }
 
         agregarHistorial(
-            `<strong>${jugadorNombre}</strong> sacó <strong>${dado1}</strong> y <strong>${dado2}</strong> (Total: <strong>${suma}</strong>)`,
+            `<strong>${escaparHTML(jugadorNombre)}</strong> sacó <strong>${dado1}</strong> y <strong>${dado2}</strong> (Total: <strong>${suma}</strong>)`,
             '🎲'
         );
     }
@@ -2180,7 +2334,7 @@ socket.on(
         if (pasoPorSalida) {
 
             agregarHistorial(
-                `<strong>${jugadorNombre}</strong> pasó por la Salida y cobró <strong>$2.000</strong>.`,
+                `<strong>${escaparHTML(jugadorNombre)}</strong> pasó por la Salida y cobró <strong>$2.000</strong>.`,
                 '🇦🇷'
             );
 
@@ -2338,7 +2492,7 @@ socket.on(
         }
 
         agregarHistorial(
-            `<strong>${jugadorNombre}</strong> compró <strong>${nombrePropiedad}</strong> por <strong>${precio.toLocaleString('es-AR')}</strong>.`,
+            `<strong>${escaparHTML(jugadorNombre)}</strong> compró <strong>${escaparHTML(nombrePropiedad)}</strong> por <strong>${precio.toLocaleString('es-AR')}</strong>.`,
             '🏠'
         );
 
@@ -2391,7 +2545,7 @@ socket.on(
         actualizarJugadoresPartida();
 
         agregarHistorial(
-            `<strong>${deNombre}</strong> pagó <strong>${monto.toLocaleString('es-AR')}</strong> de alquiler a <strong>${paraNombre}</strong> por <em>${propiedadNombre}</em>.`,
+            `<strong>${escaparHTML(deNombre)}</strong> pagó <strong>${monto.toLocaleString('es-AR')}</strong> de alquiler a <strong>${escaparHTML(paraNombre)}</strong> por <em>${escaparHTML(propiedadNombre)}</em>.`,
             '💸'
         );
 
@@ -2433,7 +2587,7 @@ socket.on(
         actualizarJugadoresPartida();
 
         agregarHistorial(
-            `<strong>${jugadorNombre}</strong> pagó <strong>$${monto.toLocaleString('es-AR')}</strong> de <em>${nombre}</em>.`,
+            `<strong>${escaparHTML(jugadorNombre)}</strong> pagó <strong>$${monto.toLocaleString('es-AR')}</strong> de <em>${escaparHTML(nombre)}</em>.`,
             '🧾'
         );
     }
@@ -2506,7 +2660,7 @@ socket.on(
         }
 
         agregarHistorial(
-            `<strong>${jugadorNombre}</strong> sacó una tarjeta de ${categoria}: <em>"${carta.texto}"</em>`,
+            `<strong>${escaparHTML(jugadorNombre)}</strong> sacó una tarjeta de ${escaparHTML(categoria)}: <em>"${escaparHTML(carta.texto)}"</em>`,
             categoria === 'suerte'
                 ? '🎴'
                 : '📦'
@@ -2544,7 +2698,7 @@ socket.on(
         actualizarJugadoresPartida();
 
         agregarHistorial(
-            `🚔 ¡<strong>${jugadorNombre}</strong> cayó en la Comisaría y fue enviado a la Cárcel!`,
+            `🚔 ¡<strong>${escaparHTML(jugadorNombre)}</strong> cayó en la Comisaría y fue enviado a la Cárcel!`,
             '🚔'
         );
     }
@@ -2580,7 +2734,7 @@ socket.on(
         actualizarDineroJugador();
 
         agregarHistorial(
-            `🔓 <strong>${jugadorNombre}</strong> salió de la cárcel: ${motivo}`,
+            `🔓 <strong>${escaparHTML(jugadorNombre)}</strong> salió de la cárcel: ${escaparHTML(motivo)}`,
             '🔓'
         );
     }
@@ -2597,7 +2751,7 @@ socket.on(
     }) => {
 
         agregarHistorial(
-            `🔒 <strong>${jugadorNombre}</strong> sigue en la cárcel (intentos restantes: ${turnosRestantes}).`,
+            `🔒 <strong>${escaparHTML(jugadorNombre)}</strong> sigue en la cárcel (intentos restantes: ${turnosRestantes}).`,
             '🔒'
         );
 
@@ -2660,7 +2814,7 @@ socket.on(
         actualizarJugadoresPartida();
 
         agregarHistorial(
-            `💀 <strong>${jugadorNombre}</strong> se declaró en BANCARROTA y queda eliminado.`,
+            `💀 <strong>${escaparHTML(jugadorNombre)}</strong> se declaró en BANCARROTA y queda eliminado.`,
             '💀'
         );
     }
@@ -2723,7 +2877,7 @@ socket.on(
         actualizarJugadoresPartida();
 
         agregarHistorial(
-            `Es el turno de <strong>${jugadorNombre}</strong>.`,
+            `Es el turno de <strong>${escaparHTML(jugadorNombre)}</strong>.`,
             '👉'
         );
     }
@@ -2794,7 +2948,7 @@ socket.on(
         }
 
         agregarHistorial(
-            `🚪 <strong>${nombre}</strong> salió de la partida.`,
+            `🚪 <strong>${escaparHTML(nombre)}</strong> salió de la partida.`,
             '🚪'
         );
     }
@@ -3124,7 +3278,7 @@ if (btnIntercambiar) {
                         <select id="tratoJugador">
                             ${otros.map(
                     j =>
-                        `<option value="${j.id}">${j.nombre}</option>`
+                        `<option value="${escaparHTML(j.id)}">${escaparHTML(j.nombre)}</option>`
                 ).join('')
                 }
                         </select>
@@ -3318,6 +3472,30 @@ if (btnUsarTarjetaCarcel) {
 }
 
 socket.on(
+    'jugador_en_deuda',
+    ({ jugadorId, jugadorNombre, monto, acreedorId }) => {
+        const jugador =
+            jugadoresPartida.find(j => j.id === jugadorId);
+
+        if (jugador) {
+            jugador.deudaPendiente = monto;
+            jugador.acreedorId = acreedorId || null;
+        }
+
+        actualizarTurno();
+        agregarHistorial(
+            `⚠️ <strong>${escaparHTML(jugadorNombre)}</strong> debe $${monto.toLocaleString('es-AR')}.`,
+            '💸'
+        );
+
+        if (jugadorId === socket.id && mensajeDados) {
+            mensajeDados.textContent =
+                `⚠️ Tenés una deuda de $${monto.toLocaleString('es-AR')}. Pagala o declarate en bancarrota.`;
+        }
+    }
+);
+
+socket.on(
     'estado_economico_actualizado',
     estado => {
 
@@ -3495,7 +3673,7 @@ socket.on(
         }
 
         agregarHistorial(
-            `🔨 <strong>${jugadorNombre}</strong> ofertó <strong>$${monto.toLocaleString('es-AR')}</strong>.`,
+            `🔨 <strong>${escaparHTML(jugadorNombre)}</strong> ofertó <strong>$${monto.toLocaleString('es-AR')}</strong>.`,
             '🔨'
         );
     }
@@ -3518,7 +3696,7 @@ socket.on(
         agregarHistorial(
             sinGanador
                 ? '🔨 La subasta terminó sin ofertas.'
-                : `🔨 <strong>${ganadorNombre}</strong> ganó la subasta por <strong>$${monto.toLocaleString('es-AR')}</strong>.`,
+                : `🔨 <strong>${escaparHTML(ganadorNombre)}</strong> ganó la subasta por <strong>$${monto.toLocaleString('es-AR')}</strong>.`,
             '🔨'
         );
     }
@@ -3546,7 +3724,7 @@ socket.on(
             `
                 <p>
                     <strong>
-                        ${trato.deNombre}
+                        ${escaparHTML(trato.deNombre)}
                     </strong>
                     ofrece:
                     ${nombres(trato.misProps)}
@@ -3628,7 +3806,7 @@ socket.on(
     }) =>
         agregarHistorial(
             aceptado
-                ? `🤝 Intercambio completado entre <strong>${deNombre}</strong> y <strong>${paraNombre}</strong>.`
+                ? `🤝 Intercambio completado entre <strong>${escaparHTML(deNombre)}</strong> y <strong>${escaparHTML(paraNombre)}</strong>.`
                 : '🤝 Intercambio rechazado.',
             '🤝'
         )
@@ -3647,7 +3825,7 @@ socket.on(
     }) => {
 
         agregarHistorial(
-            `📴 <strong>${jugadorNombre}</strong> se desconectó. Tiene ${segundosGracia}s para volver.`,
+            `📴 <strong>${escaparHTML(jugadorNombre)}</strong> se desconectó. Tiene ${segundosGracia}s para volver.`,
             '📴'
         );
     }
@@ -3660,7 +3838,7 @@ socket.on(
     }) => {
 
         agregarHistorial(
-            `📶 <strong>${jugadorNombre}</strong> volvió a conectarse.`,
+            `📶 <strong>${escaparHTML(jugadorNombre)}</strong> volvió a conectarse.`,
             '📶'
         );
     }
@@ -3674,7 +3852,7 @@ socket.on(
     }) => {
 
         agregarHistorial(
-            `🚪 <strong>${jugadorNombre}</strong> fue removido de la partida (${motivo})`,
+            `🚪 <strong>${escaparHTML(jugadorNombre)}</strong> fue removido de la partida (${escaparHTML(motivo)})`,
             '🚪'
         );
     }
@@ -3815,7 +3993,7 @@ socket.on(
     }) => {
 
         agregarHistorial(
-            `⏱️ Se agotó el tiempo de <strong>${jugadorNombre}</strong> y se pasó el turno.`,
+            `⏱️ Se agotó el tiempo de <strong>${escaparHTML(jugadorNombre)}</strong> y se pasó el turno.`,
             '⏱️'
         );
     }
@@ -3876,8 +4054,7 @@ function renderizarMensajeChat(
         item.className =
             'chat-mensaje chat-sistema';
 
-        item.innerHTML =
-            `<span class="chat-texto">${mensaje.texto}</span>`;
+        item.textContent = mensaje.texto;
 
     } else {
 
@@ -3890,12 +4067,7 @@ function renderizarMensajeChat(
         item.innerHTML = `
             <div class="chat-mensaje-cabecera">
 
-                <strong>
-                    ${esMio
-                ? 'Vos'
-                : mensaje.jugadorNombre
-            }
-                </strong>
+                <strong class="chat-autor"></strong>
 
                 <span class="chat-hora">
                     ${formatearHoraChat(mensaje.hora)}
@@ -3905,6 +4077,9 @@ function renderizarMensajeChat(
 
             <div class="chat-texto"></div>
         `;
+
+        item.querySelector('.chat-autor').textContent =
+            esMio ? 'Vos' : mensaje.jugadorNombre;
 
         item.querySelector(
             '.chat-texto'
@@ -4195,7 +4370,7 @@ function mostrarResultadoFinal(
             </p>
 
             <p style="font-size: 16px; margin-bottom: 30px;">
-                <strong>${nombreGanador}</strong>
+                <strong>${escaparHTML(nombreGanador)}</strong>
                 es el ganador de la partida.
             </p>
 
@@ -4220,7 +4395,7 @@ function mostrarResultadoFinal(
             </h2>
 
             <p style="font-size: 18px; margin-bottom: 25px;">
-                <strong>${nombreGanador}</strong>
+                <strong>${escaparHTML(nombreGanador)}</strong>
                 ganó la partida.
             </p>
 
@@ -4340,270 +4515,6 @@ if (btnTemaOscuro) {
     btnTemaOscuro.addEventListener('click', () => {
         const esOscuro = document.body.classList.contains('tema-oscuro');
         aplicarTema(!esOscuro);
-    });
-}
-
-// ==========================================
-// ESTADÍSTICAS DE LA PARTIDA
-// ==========================================
-
-const btnEstadisticas = document.getElementById('btnEstadisticas');
-const modalEstadisticas = document.getElementById('modalEstadisticas');
-const estadisticasContenido = document.getElementById('estadisticasContenido');
-const btnCerrarEstadisticas = document.getElementById('btnCerrarEstadisticas');
-
-let estadisticas = {
-    propiedadesCompradas: 0,
-    alquileresRecibidos: 0,
-    alquileresPagados: 0,
-    dineroGanado: 0,
-    dineroGastado: 0,
-    vueltasAlTablero: 0,
-    vecesEnCarcel: 0,
-    doblesConsecutivos: 0,
-    cartasRobadas: 0
-};
-
-function actualizarEstadistica(clave, valor = 1) {
-    if (estadisticas.hasOwnProperty(clave)) {
-        estadisticas[clave] += valor;
-    }
-}
-
-function renderizarEstadisticas() {
-    if (!estadisticasContenido) return;
-
-    const miJugador = jugadoresPartida.find(j => j.id === socket.id);
-    const miDinero = miJugador ? miJugador.dinero : 0;
-    const misPropiedades = miJugador && miJugador.propiedades ? miJugador.propiedades.length : 0;
-
-    estadisticasContenido.innerHTML = `
-        <div class="stat-card">
-            <div class="stat-icono">💰</div>
-            <div class="stat-valor">$${miDinero.toLocaleString('es-AR')}</div>
-            <div class="stat-label">Dinero actual</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icono">🏠</div>
-            <div class="stat-valor">${misPropiedades}</div>
-            <div class="stat-label">Propiedades</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icono">🛒</div>
-            <div class="stat-valor">${estadisticas.propiedadesCompradas}</div>
-            <div class="stat-label">Compras realizadas</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icono">💸</div>
-            <div class="stat-valor">$${estadisticas.dineroGastado.toLocaleString('es-AR')}</div>
-            <div class="stat-label">Dinero gastado</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icono">📈</div>
-            <div class="stat-valor">$${estadisticas.dineroGanado.toLocaleString('es-AR')}</div>
-            <div class="stat-label">Dinero ganado</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icono">📥</div>
-            <div class="stat-valor">${estadisticas.alquileresRecibidos}</div>
-            <div class="stat-label">Alquileres cobrados</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icono">📤</div>
-            <div class="stat-valor">${estadisticas.alquileresPagados}</div>
-            <div class="stat-label">Alquileres pagados</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icono">🔄</div>
-            <div class="stat-valor">${estadisticas.vueltasAlTablero}</div>
-            <div class="stat-label">Vueltas al tablero</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icono">🚔</div>
-            <div class="stat-valor">${estadisticas.vecesEnCarcel}</div>
-            <div class="stat-label">Veces en cárcel</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icono">🎴</div>
-            <div class="stat-valor">${estadisticas.cartasRobadas}</div>
-            <div class="stat-label">Cartas sacadas</div>
-        </div>
-    `;
-}
-
-if (btnEstadisticas) {
-    btnEstadisticas.addEventListener('click', () => {
-        renderizarEstadisticas();
-        if (modalEstadisticas) {
-            modalEstadisticas.classList.remove('oculto');
-        }
-    });
-}
-
-if (btnCerrarEstadisticas) {
-    btnCerrarEstadisticas.addEventListener('click', () => {
-        if (modalEstadisticas) {
-            modalEstadisticas.classList.add('oculto');
-        }
-    });
-}
-
-// ==========================================
-// SISTEMA DE LOGROS
-// ==========================================
-
-const btnLogros = document.getElementById('btnLogros');
-const modalLogros = document.getElementById('modalLogros');
-const logrosContenido = document.getElementById('logrosContenido');
-const btnCerrarLogros = document.getElementById('btnCerrarLogros');
-const toastContainer = document.getElementById('toastContainer');
-
-const DEFINICION_LOGROS = [
-    {
-        id: 'primera_propiedad',
-        nombre: '🏠 Primer Hogar',
-        descripcion: 'Comprá tu primera propiedad',
-        condicion: () => estadisticas.propiedadesCompradas >= 1,
-        nivel: 'bronce'
-    },
-    {
-        id: 'magnate',
-        nombre: '🏢 Magnate Inmobiliario',
-        descripcion: 'Comprá 5 propiedades',
-        condicion: () => estadisticas.propiedadesCompradas >= 5,
-        nivel: 'oro'
-    },
-    {
-        id: 'cobrador',
-        nombre: '💰 Cobrador Profesional',
-        descripcion: 'Cobrá 3 alquileres',
-        condicion: () => estadisticas.alquileresRecibidos >= 3,
-        nivel: 'plata'
-    },
-    {
-        id: 'superviviente',
-        nombre: '🔒 Superviviente',
-        descripcion: 'Salí de la cárcel 2 veces',
-        condicion: () => estadisticas.vecesEnCarcel >= 2,
-        nivel: 'plata'
-    },
-    {
-        id: 'viajero',
-        nombre: '🌍 Viajero Argentino',
-        descripcion: 'Completá 3 vueltas al tablero',
-        condicion: () => estadisticas.vueltasAlTablero >= 3,
-        nivel: 'oro'
-    },
-    {
-        id: 'gastador',
-        nombre: '💸 Gran Gastador',
-        descripcion: 'Gastá más de $10.000',
-        condicion: () => estadisticas.dineroGastado >= 10000,
-        nivel: 'plata'
-    },
-    {
-        id: 'millonario',
-        nombre: '🤑 Millonario',
-        descripcion: 'Tené más de $30.000',
-        condicion: () => {
-            const miJugador = jugadoresPartida.find(j => j.id === socket.id);
-            return miJugador && miJugador.dinero >= 30000;
-        },
-        nivel: 'oro'
-    },
-    {
-        id: 'suertudo',
-        nombre: '🍀 Suertudo',
-        descripcion: 'Sacá 5 cartas de suerte o arca',
-        condicion: () => estadisticas.cartasRobadas >= 5,
-        nivel: 'bronce'
-    },
-    {
-        id: 'pagador',
-        nombre: '💳 Buen Pagador',
-        descripcion: 'Pagá 5 alquileres',
-        condicion: () => estadisticas.alquileresPagados >= 5,
-        nivel: 'bronce'
-    },
-    {
-        id: 'inversor',
-        nombre: '📊 Inversor Estrella',
-        descripcion: 'Ganá más de $15.000',
-        condicion: () => estadisticas.dineroGanado >= 15000,
-        nivel: 'oro'
-    }
-];
-
-const logrosDesbloqueados = new Set();
-
-function verificarLogros() {
-    DEFINICION_LOGROS.forEach(logro => {
-        if (!logrosDesbloqueados.has(logro.id) && logro.condicion()) {
-            logrosDesbloqueados.add(logro.id);
-            mostrarToastLogro(logro);
-        }
-    });
-}
-
-function mostrarToastLogro(logro) {
-    if (!toastContainer) return;
-
-    const toast = document.createElement('div');
-    toast.className = `toast-logro toast-${logro.nivel}`;
-    toast.innerHTML = `
-        <div class="toast-logro-icono">🏆</div>
-        <div class="toast-logro-info">
-            <strong>¡Logro desbloqueado!</strong>
-            <span>${logro.nombre}</span>
-            <small>${logro.descripcion}</small>
-        </div>
-    `;
-
-    toastContainer.appendChild(toast);
-
-    // Trigger animation
-    requestAnimationFrame(() => {
-        toast.classList.add('toast-visible');
-    });
-
-    setTimeout(() => {
-        toast.classList.remove('toast-visible');
-        toast.classList.add('toast-saliendo');
-        setTimeout(() => toast.remove(), 400);
-    }, 4000);
-}
-
-function renderizarLogros() {
-    if (!logrosContenido) return;
-
-    logrosContenido.innerHTML = DEFINICION_LOGROS.map(logro => {
-        const desbloqueado = logrosDesbloqueados.has(logro.id);
-        return `
-            <div class="logro-card ${desbloqueado ? 'logro-desbloqueado' : 'logro-bloqueado'} logro-${logro.nivel}">
-                <div class="logro-icono">${desbloqueado ? '🏆' : '🔒'}</div>
-                <div class="logro-info">
-                    <strong>${logro.nombre}</strong>
-                    <small>${logro.descripcion}</small>
-                </div>
-            </div>
-        `;
-    }).join('');
-}
-
-if (btnLogros) {
-    btnLogros.addEventListener('click', () => {
-        renderizarLogros();
-        if (modalLogros) {
-            modalLogros.classList.remove('oculto');
-        }
-    });
-}
-
-if (btnCerrarLogros) {
-    btnCerrarLogros.addEventListener('click', () => {
-        if (modalLogros) {
-            modalLogros.classList.add('oculto');
-        }
     });
 }
 

@@ -39,6 +39,38 @@
                 Jugá con tus amigos en una partida online.
             </p>
 
+            <details class="cuenta-panel">
+                <summary>Cuenta e historial de partidas</summary>
+                <div id="cuentaInvitado">
+                    <div class="campo">
+                        <label for="cuentaEmail">Correo electrónico</label>
+                        <input id="cuentaEmail" type="email" autocomplete="email" maxlength="254">
+                    </div>
+                    <div class="campo">
+                        <label for="cuentaPassword">Contraseña</label>
+                        <input id="cuentaPassword" type="password" autocomplete="current-password" minlength="8">
+                    </div>
+                    <div class="acciones-cuenta">
+                        <button id="btnRegistrar" class="btn principal" type="button">Crear cuenta</button>
+                        <button id="btnIniciarSesion" class="btn secundario" type="button">Iniciar sesión</button>
+                    </div>
+                    <p class="texto-pequeno">También podés conectar con:</p>
+                    <div class="acciones-cuenta">
+                        <button id="btnGoogle" class="btn secundario" type="button">Google</button>
+                        <button id="btnFacebook" class="btn secundario" type="button">Facebook</button>
+                    </div>
+                </div>
+                <div id="cuentaConectada" class="oculto">
+                    <p id="cuentaUsuario"></p>
+                    <div class="acciones-cuenta">
+                        <button id="btnVerHistorial" class="btn secundario" type="button">Ver historial</button>
+                        <button id="btnCerrarSesion" class="btn volver" type="button">Cerrar sesión</button>
+                    </div>
+                    <ul id="listaHistorial" class="lista-historial"></ul>
+                </div>
+                <p id="mensajeCuenta" class="mensaje" role="status" aria-live="polite"></p>
+            </details>
+
 
             <div class="menu-inicio">
 
@@ -88,6 +120,15 @@
 
             </div>
 
+            <div class="campo">
+                <label for="fichaCrear">Tu ficha 3D</label>
+                <select id="fichaCrear" class="selector-ficha">
+                    <option value="caballo">Caballo</option>
+                    <option value="computador">Computador</option>
+                    <option value="churros">Churros</option>
+                </select>
+            </div>
+
 
             <button id="btnCrearSala" class="btn principal">
                 🎮 Crear partida
@@ -125,6 +166,15 @@
 
                 <input type="text" id="nombreUnirse" placeholder="Ingresá tu nombre" maxlength="20" autocomplete="off">
 
+            </div>
+
+            <div class="campo">
+                <label for="fichaUnirse">Tu ficha 3D</label>
+                <select id="fichaUnirse" class="selector-ficha">
+                    <option value="caballo">Caballo</option>
+                    <option value="computador">Computador</option>
+                    <option value="churros">Churros</option>
+                </select>
             </div>
 
             <div class="campo">
@@ -267,6 +317,10 @@
                 <div class="estado-partida">
                     🎲 Partida en curso
                 </div>
+
+                <button id="btnSalirPartida" class="btn secundario btn-salir-partida" type="button">
+                    🚪 Salir
+                </button>
 
             </div>
 
@@ -579,7 +633,11 @@
     LÓGICA DE LA APLICACIÓN
     =========================================== -->
 
+    <script src="js/estadisticas.js"></script>
     <script src="js/app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+    <script src="js/auth.js"></script>
+    <script type="module" src="js/fichas3d.js"></script>
 
     <!-- ==========================================
         EDIFICIOS3D

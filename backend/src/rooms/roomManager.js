@@ -1,7 +1,68 @@
+const crypto = require('crypto');
+
 const rooms = {};
+const FICHAS_3D = new Set(['caballo', 'computador', 'churros']);
 
 // Cuántos mensajes de chat (incluyendo los del sistema) se conservan por sala.
 const MAX_MENSAJES_CHAT = 200;
+
+
+// ==========================================
+// VALIDAR NOMBRE DE JUGADOR
+// ==========================================
+
+function validarNombreJugador(nombre) {
+    if (typeof nombre !== 'string') {
+        return { valido: false, error: 'El nombre debe ser un texto.' };
+    }
+
+    if (/[\p{Cc}\p{Cf}]/u.test(nombre)) {
+        return { valido: false, error: 'El nombre no puede contener caracteres de control.' };
+    }
+
+    const limpio = nombre.normalize('NFC').trim().replace(/\s+/g, ' ');
+    const largo = [...limpio].length;
+
+    if (largo < 2) {
+        return { valido: false, error: 'El nombre debe tener al menos 2 caracteres.' };
+    }
+
+    if (largo > 20) {
+        return { valido: false, error: 'El nombre no puede tener más de 20 caracteres.' };
+    }
+
+    // Permitir letras unicode (con acentos, diéresis, ñ), números, espacios y guiones
+    const regexValido = /^[\p{L}\p{N} -]+$/u;
+    if (!regexValido.test(limpio)) {
+        return { valido: false, error: 'El nombre solo puede contener letras, números, espacios y guiones.' };
+    }
+
+    return { valido: true, nombre: limpio };
+}
+
+
+// ==========================================
+// GENERAR TOKEN SEGURO
+// ==========================================
+
+function generarTokenSeguro() {
+    return crypto.randomBytes(24).toString('hex');
+}
+
+function esTokenSeguro(token) {
+    return typeof token === 'string' &&
+        (/^[a-f0-9]{48}$/i.test(token) ||
+            /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(token));
+}
+
+function normalizarCodigoSala(codigo) {
+    if (typeof codigo !== 'string') return null;
+
+    const normalizado = codigo.trim().toUpperCase();
+    return /^[A-Z0-9]{6}$/.test(normalizado)
+        ? normalizado
+        : null;
+}
 
 
 // ==========================================
@@ -9,26 +70,15 @@ const MAX_MENSAJES_CHAT = 200;
 // ==========================================
 
 function generarCodigo() {
-
-    const caracteres =
-        'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-
+    const caracteres = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     let codigo;
 
     do {
-
         codigo = '';
-
+        const bytes = crypto.randomBytes(6);
         for (let i = 0; i < 6; i++) {
-
-            codigo += caracteres.charAt(
-                Math.floor(
-                    Math.random() * caracteres.length
-                )
-            );
-
+            codigo += caracteres.charAt(bytes[i] % caracteres.length);
         }
-
     } while (rooms[codigo]);
 
     return codigo;
@@ -36,10 +86,49 @@ function generarCodigo() {
 
 
 // ==========================================
+// SANITIZAR JUGADOR Y SALA (ocultar tokens)
+// ==========================================
+
+function sanitizarJugador(jugador) {
+    if (!jugador) return null;
+    const { token, authUserId, ...jugadorSeguro } = jugador;
+    return jugadorSeguro;
+}
+
+function sanitizarSala(sala) {
+    if (!sala) return null;
+    const {
+        partidaId,
+        iniciadaEn,
+        participantesIniciales,
+        ...salaPublica
+    } = sala;
+    return {
+        ...salaPublica,
+        jugadores: Array.isArray(sala.jugadores)
+            ? sala.jugadores.map(sanitizarJugador)
+            : []
+    };
+}
+
+
+// ==========================================
 // CREAR SALA
 // ==========================================
 
-function crearSala(socketId, nombre, token) {
+function crearSala(socketId, nombre, token, fichaId = 'caballo', authUserId = null) {
+    const validacion = validarNombreJugador(nombre);
+    if (!validacion.valido) {
+        return { error: validacion.error };
+    }
+    if (!FICHAS_3D.has(fichaId)) {
+        return { error: 'La ficha seleccionada no está disponible.' };
+    }
+
+    const tokenFinal = esTokenSeguro(token)
+        ? token
+        : generarTokenSeguro();
+
     const codigo = generarCodigo();
 
     rooms[codigo] = {
@@ -58,8 +147,10 @@ function crearSala(socketId, nombre, token) {
         jugadores: [
             {
                 id: socketId,
-                token: token || null,
-                nombre: nombre,
+                token: tokenFinal,
+                authUserId,
+                fichaId,
+                nombre: validacion.nombre,
                 posicion: 1,
                 dinero: 15000,
                 propiedades: [],
@@ -75,7 +166,10 @@ function crearSala(socketId, nombre, token) {
         ]
     };
 
-    return rooms[codigo];
+    return {
+        sala: rooms[codigo],
+        token: tokenFinal
+    };
 }
 
 
@@ -98,7 +192,9 @@ function agregarJugador(
     codigo,
     socketId,
     nombre,
-    token
+    token,
+    fichaId = 'caballo',
+    authUserId = null
 ) {
 
     const sala = rooms[codigo];
@@ -113,6 +209,10 @@ function agregarJugador(
             error: 'La sala no existe.'
         };
 
+    }
+
+    if (!FICHAS_3D.has(fichaId)) {
+        return { error: 'La ficha seleccionada no está disponible.' };
     }
 
 
@@ -162,13 +262,52 @@ function agregarJugador(
 
 
     // --------------------------------------
+    // VALIDAR NOMBRE
+    // --------------------------------------
+
+    const validacion = validarNombreJugador(nombre);
+    if (!validacion.valido) {
+        return {
+            error: validacion.error
+        };
+    }
+
+    const nombreRepetido = sala.jugadores.some(
+        j => !j.enBancarrota &&
+            j.nombre.normalize('NFC').toLowerCase() === validacion.nombre.toLowerCase()
+    );
+
+    if (nombreRepetido) {
+        return {
+            error: 'Ya hay un jugador con ese nombre en la sala.'
+        };
+    }
+
+
+    // --------------------------------------
+    // ASIGNAR TOKEN SEGURO
+    // --------------------------------------
+
+    let tokenFinal = esTokenSeguro(token)
+        ? token
+        : generarTokenSeguro();
+
+    // Si ya existe otro jugador con el mismo token en la sala, regenerar
+    if (sala.jugadores.some(j => j.id !== socketId && j.token === tokenFinal)) {
+        tokenFinal = generarTokenSeguro();
+    }
+
+
+    // --------------------------------------
     // AGREGAR JUGADOR
     // --------------------------------------
 
     sala.jugadores.push({
         id: socketId,
-        token: token || null,
-        nombre: nombre,
+        token: tokenFinal,
+        authUserId,
+        fichaId,
+        nombre: validacion.nombre,
         posicion: 1,
         dinero: 15000,
         propiedades: [],
@@ -184,7 +323,8 @@ function agregarJugador(
 
 
     return {
-        sala
+        sala,
+        token: tokenFinal
     };
 
 }
@@ -321,6 +461,7 @@ function remapIdEnSala(sala, idViejo, idNuevo) {
 
     if (sala.host === idViejo) sala.host = idNuevo;
     if (sala.turno === idViejo) sala.turno = idNuevo;
+    if (sala.ganador?.id === idViejo) sala.ganador.id = idNuevo;
 
     Object.keys(sala.propiedades || {}).forEach(numero => {
         if (sala.propiedades[numero] === idViejo) {
@@ -376,6 +517,10 @@ function reconectarJugador(codigo, token, nuevoSocketId) {
 
     if (!sala) {
         return { error: 'La sala ya no existe.' };
+    }
+
+    if (!esTokenSeguro(token)) {
+        return { error: 'El token de sesión no es válido.' };
     }
 
     const jugador = sala.jugadores.find(j => j.token && j.token === token);
@@ -584,6 +729,12 @@ module.exports = {
     reconectarJugador,
     eliminarJugadorPorToken,
     siguienteJugadorActivo,
-    agregarMensajeChat
+    agregarMensajeChat,
+    validarNombreJugador,
+    generarTokenSeguro,
+    esTokenSeguro,
+    normalizarCodigoSala,
+    sanitizarJugador,
+    sanitizarSala
 
 };

@@ -545,12 +545,15 @@ function actualizarFichas(jugadores) {
 
             ficha.title =
                 jugador.nombre;
+            ficha.dataset.jugadorId = jugador.id;
+            ficha.dataset.ficha3d = jugador.fichaId || 'caballo';
 
 
             contenedor.appendChild(
                 ficha
             );
 
+            window.actualizarFichas3D?.(jugadores);
         }
     );
 
